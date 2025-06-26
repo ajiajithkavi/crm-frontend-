@@ -7,6 +7,7 @@ import location1 from "../PropertyInnerPage/Assets/location1.png";
 import bed from "../PropertyInnerPage/Assets/bed.png";
 import sqft from "../PropertyInnerPage/Assets/sqft.png";
 import apartment from "../PropertyInnerPage/Assets/apartment.png";
+import Map  from "./Map";
 
 const Aboutus = () => {
   const navigate = useNavigate();
@@ -47,11 +48,11 @@ const Aboutus = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
-    {buildings.map((building) => (
-      <div
-        key={building._id}
-        className="mb-4 pb-4 border-b last:border-b-0" // Keep minimal spacing or change to mb-0 pb-0 if no gap is desired
-      >
+      {buildings.map((building) => (
+        <div
+          key={building._id}
+          className="mb-4 pb-4 border-b last:border-b-0" // Keep minimal spacing or change to mb-0 pb-0 if no gap is desired
+        >
           {/* Image Section */}
           <div className="flex flex-col lg:flex-row gap-6 md:gap-10 lg:gap-14 items-center">
             <img
@@ -126,6 +127,9 @@ const Aboutus = () => {
                 )) || <li>No amenities available</li>}
               </ul>
             </div>
+          </div>
+          <div className="mt-0">
+            <Map building={building} />
           </div>
         </div>
       ))}
