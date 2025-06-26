@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import toast, { Toaster } from 'react-hot-toast';
 import axios from "axios";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
@@ -22,6 +22,7 @@ import {
   GripVertical,
   X,
   Download,
+  Search,
 } from "lucide-react";
 import {
   DndContext,
@@ -79,6 +80,8 @@ const statuses = [
 const LeadsPage = () => {
   const [token, setToken] = useState("");
   const [leads, setLeads] = useState([]);
+  const [filteredLeads, setFilteredLeads] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [builders, setBuilders] = useState([]);
@@ -87,8 +90,6 @@ const LeadsPage = () => {
   const [activeId, setActiveId] = useState(null);
   const [showDealForm, setShowDealForm] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-
-
   const [newLead, setNewLead] = useState({
     email: "",
     phone: "",
@@ -103,9 +104,9 @@ const LeadsPage = () => {
     notes: [],
     createdAt: "",
   });
-
   const [editingLeadIndex, setEditingLeadIndex] = useState(null);
   const [actionMenuIndex, setActionMenuIndex] = useState(null);
+  const actionMenuRef = useRef(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -132,14 +133,12 @@ const LeadsPage = () => {
           ]);
 
         setLeads(leadsResponse.data);
+        setFilteredLeads(leadsResponse.data);
         setUsers(usersResponse.data);
         setBuilders(builderRes.data);
         setUnits(unitRes.data);
       } catch (error) {
         console.error("Failed to fetch data:", error);
-        // TEMPORARY: Uncomment for testing with dummy data
-        // setLeads(dummyLeads);
-        // setUsers(dummyUsers);
       } finally {
         setLoading(false);
       }
@@ -147,6 +146,25 @@ const LeadsPage = () => {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const filtered = leads.filter(lead => {
+      if (!searchTerm) return true;
+      
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        (lead.userName && lead.userName.toLowerCase().includes(searchLower)) ||
+        (lead.userEmail && lead.userEmail.toLowerCase().includes(searchLower)) ||
+        (lead.userPhone && lead.userPhone.includes(searchTerm)) ||
+        (lead.notes && lead.notes.some(note => 
+          note.note && note.note.toLowerCase().includes(searchLower)
+        )) ||
+        (lead.status && lead.status.toLowerCase().includes(searchLower)) ||
+        (lead.source && lead.source.toLowerCase().includes(searchLower))
+      );
+    });
+    setFilteredLeads(filtered);
+  }, [searchTerm, leads]);
 
   const handleInterestedInChange = async (e) => {
     const { name, value } = e.target;
@@ -270,7 +288,9 @@ const LeadsPage = () => {
   };
 
   const handleEditLead = (index) => {
-    const leadToEdit = leads[index];
+    const leadToEdit = filteredLeads[index];
+    const originalIndex = leads.findIndex(lead => lead._id === leadToEdit._id);
+    
     setNewLead({
       email: leadToEdit.email,
       phone: leadToEdit.phone,
@@ -285,20 +305,22 @@ const LeadsPage = () => {
       notes: leadToEdit.notes || [],
       createdAt: leadToEdit.createdAt,
     });
-    setEditingLeadIndex(index);
+    setEditingLeadIndex(originalIndex);
     setShowDealForm(true);
     setActionMenuIndex(null);
   };
 
   const handleDeleteLead = async (index) => {
-    const leadToDelete = leads[index];
+    const leadToDelete = filteredLeads[index];
+    const originalIndex = leads.findIndex(lead => lead._id === leadToDelete._id);
+    
     try {
       await axios.delete(`${BASE_URL}/api/leads/${leadToDelete._id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      setLeads(leads.filter((_, i) => i !== index));
+      setLeads(leads.filter((_, i) => i !== originalIndex));
       setActionMenuIndex(null);
     } catch (error) {
       console.error("Failed to delete lead:", error);
@@ -324,105 +346,94 @@ const LeadsPage = () => {
   };
 
   function DroppablePlaceholder({ id }) {
-  const { setNodeRef } = useDroppable({
-    id,
-    data: {
-      dropzoneFor: id,
-    },
-  });
+    const { setNodeRef } = useDroppable({
+      id,
+      data: {
+        dropzoneFor: id,
+      },
+    });
 
-  return (
-    <div
-      ref={setNodeRef}
-      className="h-16 border-2 border-dashed border-gray-300 rounded-lg mb-3"
-    />
-  );
-}
+    return (
+      <div
+        ref={setNodeRef}
+        className="h-16 border-2 border-dashed border-gray-300 rounded-lg mb-3"
+      />
+    );
+  }
 
+  const findContainer = (id) => {
+    const directStatus = statuses.find(status => status.id === id);
+    if (directStatus) return directStatus.id;
 
-const findContainer = (id) => {
-  // Case 1: ID is directly a status ID (when dragging over column headers/empty spaces)
-  const directStatus = statuses.find(status => status.id === id);
-  if (directStatus) return directStatus.id;
+    const lead = filteredLeads.find(lead => lead._id === id);
+    if (lead) return lead.status;
 
-  // Case 2: ID belongs to a lead (find which status container it's in)
-  const lead = leads.find(lead => lead._id === id);
-  if (lead) return lead.status;
-
-  // Case 3: Not found (shouldn't normally happen)
-  return null;
-};
+    return null;
+  };
 
   const handleDragStart = (event) => {
     setActiveId(event.active.id);
   };
 
-const handleDragOver = (event) => {
-  const { active, over } = event;
-  if (!over) return;
+  const handleDragOver = (event) => {
+    const { active, over } = event;
+    if (!over) return;
 
-  const activeContainer = findContainer(active.id);
-  let overContainer = findContainer(over.id);
+    const activeContainer = findContainer(active.id);
+    let overContainer = findContainer(over.id);
 
-  // Special handling for empty columns and drop zones
-  if (!overContainer) {
-    // Check if we're over a dedicated drop zone
-    if (over.data.current?.dropzoneFor) {
-      overContainer = over.data.current.dropzoneFor;
+    if (!overContainer) {
+      if (over.data.current?.dropzoneFor) {
+        overContainer = over.data.current.dropzoneFor;
+      }
+      else if (over.data.current?.sortable?.containerId) {
+        overContainer = over.data.current.sortable.containerId;
+      }
+      else if (statuses.some(status => status.id === over.id)) {
+        overContainer = over.id;
+      }
     }
-    // Check if we're over a column container
-    else if (over.data.current?.sortable?.containerId) {
-      overContainer = over.data.current.sortable.containerId;
+
+    if (!activeContainer || !overContainer || activeContainer === overContainer) {
+      return;
     }
-    // Check if we're over the column element itself
-    else if (statuses.some(status => status.id === over.id)) {
-      overContainer = over.id;
-    }
-  }
 
-  // Prevent unnecessary updates
-  if (!activeContainer || !overContainer || activeContainer === overContainer) {
-    return;
-  }
-
-  // Optimistically update UI
-  setLeads(prev => 
-    prev.map(lead => 
-      lead._id === active.id ? { ...lead, status: overContainer } : lead
-    )
-  );
-};
-
-const handleDragEnd = async (event) => {
-  const { active } = event;
-  const leadId = active.id;
-  const newStatus = findContainer(leadId);
-
-  try {
-    const leadIndex = leads.findIndex(lead => lead._id === leadId);
-    if (leadIndex === -1 || !newStatus) return;
-
-    const updatedLead = { ...leads[leadIndex], status: newStatus };
-    
-    const response = await axios.put(
-      `${BASE_URL}/api/leads/${leadId}`,
-      updatedLead,
-      { headers: { Authorization: `Bearer ${token}` } }
+    setFilteredLeads(prev => 
+      prev.map(lead => 
+        lead._id === active.id ? { ...lead, status: overContainer } : lead
+      )
     );
+  };
 
-    setLeads(prev => 
-      prev.map(lead => lead._id === leadId ? response.data : lead)
-    );
-  } catch (error) {
-    console.error("Failed to update lead status:", error);
-    // Revert UI if API call fails
-    setLeads([...leads]);
-  } finally {
-    setActiveId(null);
-  }
-};
+  const handleDragEnd = async (event) => {
+    const { active } = event;
+    const leadId = active.id;
+    const newStatus = findContainer(leadId);
 
-const handleDownload = async () => {
+    try {
+      const leadIndex = leads.findIndex(lead => lead._id === leadId);
+      if (leadIndex === -1 || !newStatus) return;
+
+      const updatedLead = { ...leads[leadIndex], status: newStatus };
+      
+      const response = await axios.put(
+        `${BASE_URL}/api/leads/${leadId}`,
+        updatedLead,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setLeads(prev => 
+        prev.map(lead => lead._id === leadId ? response.data : lead)
+      );
+    } catch (error) {
+      console.error("Failed to update lead status:", error);
+      setFilteredLeads([...leads]);
+    } finally {
+      setActiveId(null);
+    }
+  };
+
+  const handleDownload = async () => {
     toast.success("Download started successfully");
 
     try {
@@ -456,7 +467,7 @@ const handleDownload = async () => {
   };
 
   const getLeadsByStatus = (statusId) => {
-    return leads.filter((lead) => lead.status === statusId);
+    return filteredLeads.filter((lead) => lead.status === statusId);
   };
 
   const getStatusColor = (statusId) => {
@@ -464,17 +475,16 @@ const handleDownload = async () => {
     return status ? status.color : "bg-blue-100 text-blue-800 border-blue-200";
   };
 
-  const activeLead = activeId ? leads.find((d) => d._id === activeId) : null;
+  const activeLead = activeId ? filteredLeads.find((d) => d._id === activeId) : null;
 
- if (loading) {
-  return (
-    <div className="flex justify-center items-center h-64">
-      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-    </div>
-  );
-}
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
-  // Component for lead cards
   function LeadCard({
     lead,
     listeners,
@@ -492,112 +502,91 @@ const handleDownload = async () => {
 
     const statusColor = getStatusColor(lead.status);
 
-      const stopDrag = (e) => {
-    e.stopPropagation();      // Prevent drag
-    e.preventDefault();       // Prevent default drag behavior
-  };
-
-
-  // Handle outside click
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (
-        actionMenuRef.current &&
-        !actionMenuRef.current.contains(event.target)
-      ) {
-        setActionMenuIndex(null);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+    const stopDrag = (e) => {
+      e.stopPropagation();
+      e.preventDefault();
     };
-  }, [setActionMenuIndex]);
-  
+
     return (
       <div
-  ref={setNodeRef}
-  {...attributes}
-  style={style}
-  className="bg-white rounded-xl shadow p-3 mb-3 border border-gray-200 cursor-move relative"
->
-  {/* More Options Icon with Action Menu */}
-  <div className="absolute top-2 right-2">
+        ref={setNodeRef}
+        {...attributes}
+        style={style}
+        className="bg-white rounded-xl shadow p-3 mb-3 border border-gray-200 cursor-move relative"
+      >
+        <div className="absolute top-2 right-2">
           <button
-          onMouseDown={stopDrag}
-          onClick={(e) => {
-            e.stopPropagation();
-            setActionMenuIndex(
-              lead._id === actionMenuIndex ? null : lead._id
-            );
-          }}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          <MoreVertical size={16} />
-        </button>
+            onMouseDown={stopDrag}
+            onClick={(e) => {
+              e.stopPropagation();
+              setActionMenuIndex(
+                lead._id === actionMenuIndex ? null : lead._id
+              );
+            }}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <MoreVertical size={16} />
+          </button>
 
-    {actionMenuIndex === lead._id && (
-      <div className="absolute right-0 mt-2 w-15 bg-white border rounded-lg shadow z-10">
-        <button
-          onClick={() =>
-            handleEditLead(leads.findIndex((l) => l._id === lead._id))
-          }
-          className="w-full px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-100"
+          {actionMenuIndex === lead._id && (
+            <div ref={actionMenuRef} className="absolute right-0 mt-2 w-15 bg-white border rounded-lg shadow z-10">
+              <button
+                onClick={() => {
+                  const index = filteredLeads.findIndex(l => l._id === lead._id);
+                  handleEditLead(index);
+                }}
+                className="w-full px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-100"
+              >
+                <Edit2 size={16} /> 
+              </button>
+              <button
+                onClick={() => {
+                  const index = filteredLeads.findIndex(l => l._id === lead._id);
+                  handleDeleteLead(index);
+                }}
+                className="w-full px-4 py-2 text-sm text-red-600 flex items-center gap-2 hover:bg-gray-100"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 mb-2" {...listeners}>
+          <div>
+            <h3 className="text-sm font-medium">
+              {lead.userName || "Unnamed Lead"}
+            </h3>
+            <p className="text-xs text-gray-500 capitalize">{lead.source}</p>
+          </div>
+        </div>
+
+        <div className="text-xs text-gray-600 space-y-1">
+          <p className="flex items-center gap-1 truncate">
+            <Send size={12} /> {lead.userEmail}
+          </p>
+          <p className="flex items-center gap-1">
+            <Voicemail size={12} /> {lead.userPhone}
+          </p>
+          <p className="flex items-center gap-1 truncate">
+            <Building2 size={12} />
+            {lead.notes.length > 0 ? lead.notes[0].note : "No notes"}
+          </p>
+          <p className="flex items-center gap-1">
+            Assigned: {getUserName(lead.user)}
+          </p>
+        </div>
+
+        <p
+          className={`text-xs mt-2 px-2 py-0.5 rounded inline-block ${statusColor}`}
         >
-          <Edit2 size={16} /> 
-        </button>
-        <button
-          onClick={() =>
-            handleDeleteLead(leads.findIndex((l) => l._id === lead._id))
-          }
-          className="w-full px-4 py-2 text-sm text-red-600 flex items-center gap-2 hover:bg-gray-100"
-        >
-          <Trash2 size={16} />
-        </button>
+          Status:{" "}
+          {statuses.find((s) => s.id === lead.status)?.title || lead.status}
+        </p>
       </div>
-    )}
-  </div>
-
-  {/* Lead Details */}
-  <div className="flex items-center gap-2 mb-2"   {...listeners}
->
-    <div>
-      <h3 className="text-sm font-medium">
-        {lead.userName || "Unnamed Lead"}
-      </h3>
-      <p className="text-xs text-gray-500 capitalize">{lead.source}</p>
-    </div>
-  </div>
-
-  <div className="text-xs text-gray-600 space-y-1">
-    <p className="flex items-center gap-1 truncate">
-      <Send size={12} /> {lead.userEmail}
-    </p>
-    <p className="flex items-center gap-1">
-      <Voicemail size={12} /> {lead.userPhone}
-    </p>
-    <p className="flex items-center gap-1 truncate">
-      <Building2 size={12} />
-      {lead.notes.length > 0 ? lead.notes[0].note : "No notes"}
-    </p>
-    <p className="flex items-center gap-1">
-      Assigned: {getUserName(lead.user)}
-    </p>
-  </div>
-
-  <p
-    className={`text-xs mt-2 px-2 py-0.5 rounded inline-block ${statusColor}`}
-  >
-    Status:{" "}
-    {statuses.find((s) => s.id === lead.status)?.title || lead.status}
-  </p>
-</div>
-
     );
   }
 
-  // Wrapper to make lead sortable
   function SortableLead({ lead }) {
     const {
       attributes,
@@ -621,57 +610,52 @@ const handleDownload = async () => {
     );
   }
 
-// Column representing a status
-function Column({ status }) {
-  const leadsInStatus = getLeadsByStatus(status.id);
-  return (
-    <div 
-      className="bg-gray-50 rounded-xl p-4 shadow border border-gray-200 min-h-[200px]"
-      data-dropzone-for={status.id}
-      {...{
-        "data-dnd-kit-dropzone-for": status.id,
-      }}
-    >
-      {/* Column Header */}
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="font-semibold text-gray-700">{status.title}</h2>
-        <span className="text-sm text-gray-500">{leadsInStatus.length}</span>
-      </div>
-
-      {/* Sortable Content Area */}
-      <SortableContext 
-        items={leadsInStatus.map(l => l._id)} 
-        strategy={rectSortingStrategy}
-      >
-        <div className="min-h-[100px] max-h-[500px] overflow-y-auto">
-          {leadsInStatus.length > 0 ? (
-            leadsInStatus.map(lead => (
-              <SortableLead key={lead._id} lead={lead} />
-            ))
-          ) : (
-            <DroppablePlaceholder id={status.id} />
-          )}
-        </div>
-      </SortableContext>
-
-      {/* Add Lead Button */}
-      <button
-        onClick={() => {
-          resetForm();
-          setNewLead(prev => ({ ...prev, status: status.id }));
-          setShowDealForm(true);
+  function Column({ status }) {
+    const leadsInStatus = getLeadsByStatus(status.id);
+    return (
+      <div 
+        className="bg-gray-50 rounded-xl p-4 shadow border border-gray-200 min-h-[200px]"
+        data-dropzone-for={status.id}
+        {...{
+          "data-dnd-kit-dropzone-for": status.id,
         }}
-        className="w-full mt-2 py-2 text-gray-500 hover:text-gray-700 text-sm flex items-center justify-center gap-1"
       >
-        <Plus size={16} /> Add lead
-      </button>
-    </div>
-  );
-}
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="font-semibold text-gray-700">{status.title}</h2>
+          <span className="text-sm text-gray-500">{leadsInStatus.length}</span>
+        </div>
+
+        <SortableContext 
+          items={leadsInStatus.map(l => l._id)} 
+          strategy={rectSortingStrategy}
+        >
+          <div className="min-h-[100px] max-h-[500px] overflow-y-auto">
+            {leadsInStatus.length > 0 ? (
+              leadsInStatus.map(lead => (
+                <SortableLead key={lead._id} lead={lead} />
+              ))
+            ) : (
+              <DroppablePlaceholder id={status.id} />
+            )}
+          </div>
+        </SortableContext>
+
+        <button
+          onClick={() => {
+            resetForm();
+            setNewLead(prev => ({ ...prev, status: status.id }));
+            setShowDealForm(true);
+          }}
+          className="w-full mt-2 py-2 text-gray-500 hover:text-gray-700 text-sm flex items-center justify-center gap-1"
+        >
+          <Plus size={16} /> Add lead
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 bg-gray-100 min-h-screen">
-      {/* Top header */}
       <div className="flex justify-between items-center mb-4 bg-white p-3 rounded-lg shadow-sm">
         <div className="flex border rounded-md overflow-hidden">
           <button className="p-2 border-r hover:bg-gray-200">
@@ -683,27 +667,38 @@ function Column({ status }) {
           >
             <List size={18} className="text-gray-600" />
           </button>
-           <Toaster />
-            <button onClick={handleDownload} className="p-2 hover:bg-gray-200">
-                      <Download size={18} className="text-gray-600" />
-                    </button>
+          <Toaster />
+          <button onClick={handleDownload} className="p-2 hover:bg-gray-200">
+            <Download size={18} className="text-gray-600" />
+          </button>
+        </div>
+        
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Search leads..."
+            className="p-2 pl-8 w-96 focus:outline-none border border-gray-300 rounded"
+            onChange={(e) => setSearchTerm(e.target.value)}
+            value={searchTerm}
+          />
+          <Search size={18} className="absolute left-2 top-3 text-gray-400" />
         </div>
 
         <div className="flex items-center gap-4">
           <div className="font-semibold text-gray-800">
-  {leads.filter((lead) =>
-      lead.status?.toLowerCase?.() !== "lost" // Handle undefined and case variations
-    ).length} leads
-</div>
+            {filteredLeads.filter((lead) =>
+              lead.status?.toLowerCase?.() !== "lost"
+            ).length} leads
+          </div>
 
-          <div className="flex border rounded-md overflow-hidden">
+          {/* <div className="flex border rounded-md overflow-hidden">
             <button className="p-2 border-r hover:bg-gray-200">
               <Filter size={18} className="text-gray-600" />
             </button>
             <button className="p-2 hover:bg-gray-200">
               <Edit size={18} className="text-gray-600" />
             </button>
-          </div>
+          </div> */}
 
           <button
             onClick={() => {
@@ -717,28 +712,24 @@ function Column({ status }) {
         </div>
       </div>
 
-      {/* Drag and drop area */}
-<DndContext
-  sensors={sensors}
-  collisionDetection={closestCenter}
-  onDragStart={handleDragStart}
-  onDragOver={handleDragOver}
-  onDragEnd={handleDragEnd}
->
-
-   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
-  {statuses.slice(0, 5).map((status) => (
-    <Column key={status.id} status={status} />
-  ))}
-</div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+          {statuses.slice(0, 5).map((status) => (
+            <Column key={status.id} status={status} />
+          ))}
+        </div>
 
         <DragOverlay>
           {activeLead && <LeadCard lead={activeLead} dragging />}
         </DragOverlay>
       </DndContext>
 
-      {/* Lead Form Modal (unchanged) */}
-      {/* Lead Form Modal */}
       {showDealForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-2xl">
@@ -931,7 +922,6 @@ function Column({ status }) {
               </button>
             </div>
           </div>
-          
         </div>
       )}
     </div>
@@ -939,6 +929,3 @@ function Column({ status }) {
 };
 
 export default LeadsPage;
-
-
-

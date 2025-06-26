@@ -103,26 +103,26 @@ const BuildingListCard = ({
                 onClick={() => handleAddfloorClick(building._id)}
               >
                 {building.photos?.length > 0 ? (
-  <img
-    src={building.photos[0]}
-    alt={building.buildingName}
-    className="w-full h-40 sm:h-48 md:h-60 object-cover cursor-pointer"
-    onClick={(e) => {
-      e.stopPropagation();
-      handleAddfloorClick(building._id); // Redirect to /add-floor
-    }}
-  />
-) : (
-  <div
-    className="w-full h-40 sm:h-48 md:h-60 bg-gray-300 flex items-center justify-center cursor-pointer"
-    onClick={(e) => {
-      e.stopPropagation();
-      handleAddfloorClick(building._id); // Redirect to /add-floor
-    }}
-  >
-    <span className="text-gray-500">No Image</span>
-  </div>
-)}
+                  <img
+                    src={building.photos[0]}
+                    alt={building.buildingName}
+                    className="w-full h-40 sm:h-48 md:h-60 object-cover cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddfloorClick(building._id); // Redirect to /add-floor
+                    }}
+                  />
+                ) : (
+                  <div
+                    className="w-full h-40 sm:h-48 md:h-60 bg-gray-300 flex items-center justify-center cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddfloorClick(building._id); // Redirect to /add-floor
+                    }}
+                  >
+                    <span className="text-gray-500">No Image</span>
+                  </div>
+                )}
                 <div className="p-4">
                   <h2 className="text-lg font-bold">{building.buildingName}</h2>
                   <p className="text-lg mt-1 text-red-600 font-semibold">
@@ -140,16 +140,6 @@ const BuildingListCard = ({
                     <span>Floors: {building.floorsCount || "N/A"}</span>
                     <span>Type: {building.type || "N/A"}</span>
                   </div>
-                  {/* <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleDescription(index);
-                    }}
-                    className="text-blue-600 underline self-start mt-2"
-                    style={{ display: expandedDescriptions[index] ? "none" : "block" }}
-                  >
-                    Show More
-                  </button> */}
                   {expandedDescriptions[index] && (
                     <div>
                       <p className="text-gray-600 mt-2">{building.description}</p>
@@ -226,7 +216,7 @@ export default function BuildingList() {
   const [filterBuildingName, setFilterBuildingName] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); // Initialize as true
+  const [isLoading, setIsLoading] = useState(true);
   const [uploadProgress, setUploadProgress] = useState(0);
   const navigate = useNavigate();
 
@@ -308,7 +298,7 @@ export default function BuildingList() {
       setValue("buildingArea", building.buildingArea);
       setValue("priceRange", building.priceRange);
       setValue("type", building.type);
-
+      setValue("mapView", building.mapView || ""); // Set mapView for editing
       setAmenities(building.amenities || []);
       setPhotos(building.photos || []);
       setVideos(building.videos || []);
@@ -502,6 +492,7 @@ export default function BuildingList() {
         amenities,
         photos: photos.filter((p) => typeof p === "string"),
         videos: videos.filter((v) => typeof v === "string"),
+        mapView: data.mapView || "", // Include mapView in buildingData
       };
 
       if (isEditMode && selectedBuilding) {
@@ -606,7 +597,7 @@ export default function BuildingList() {
             placeholder="Filter by building name"
             value={filterBuildingName}
             onChange={(e) => setFilterBuildingName(e.target.value)}
-            className="border rounded p-2"
+            className="border rounded p-2 w-64"
           />
         </div>
 
@@ -757,6 +748,32 @@ export default function BuildingList() {
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-white shadow-sm"
                     placeholder="Enter building area location"
                   />
+                </div>
+                <div>
+                  <label
+                    htmlFor="mapView"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Map View URL
+                  </label>
+                  <input
+                    type="text"
+                    id="mapView"
+                    {...register("mapView", {
+                      pattern: {
+                        value: /^https?:\/\/.+/,
+                        message:
+                          "Map view must be a valid URL starting with http:// or https://",
+                      },
+                    })}
+                    className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-white shadow-sm ${
+                      errors.mapView ? "border-red-500" : "border-gray-300"
+                    }`}
+                    placeholder="Enter map view URL"
+                  />
+                  {errors.mapView && (
+                    <p className="mt-2 text-sm text-red-500">{errors.mapView.message}</p>
+                  )}
                 </div>
                 <div>
                   <label

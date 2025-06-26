@@ -2544,7 +2544,8 @@ const handleBookNow = async () => {
         { text: 'This unit has already been booked by a customer.', type: 'error' },
       ]);
       await postToLeads(selectedUnit._id); // Create lead for interest tracking
-      return; // Stop execution to prevent further processing
+      setPaymentProcessing(false); // Reset here
+      return;
     }
 
     if (!bookingResponse.ok) {
@@ -2552,6 +2553,7 @@ const handleBookNow = async () => {
         ...prev,
         { text: `Booking failed: ${bookingResponse.statusText}`, type: 'error' },
       ]);
+      setPaymentProcessing(false); // Reset here
       throw new Error('Booking failed');
     }
 
@@ -2561,6 +2563,7 @@ const handleBookNow = async () => {
         ...prev,
         { text: 'Razorpay SDK failed to load.', type: 'error' },
       ]);
+      setPaymentProcessing(false); // Reset here
       throw new Error('Razorpay SDK failed to load');
     }
 
@@ -2607,7 +2610,7 @@ const handleBookNow = async () => {
             { text: `Payment failed: ${extractErrorMessage(error)}`, type: 'error' },
           ]);
         } finally {
-          setPaymentProcessing(false);
+          setPaymentProcessing(false); // Already present
         }
       },
       prefill: {
@@ -2635,20 +2638,17 @@ const handleBookNow = async () => {
           { text: 'Payment failed and we couldn’t save your interest. Please contact support.', type: 'error' },
         ]);
       } finally {
-        setPaymentProcessing(false);
+        setPaymentProcessing(false); // Already present
       }
     });
 
     rzp.open();
   } catch (error) {
-    if (error.message !== 'This unit has already been booked by a customer') {
-      // Only add error message if it's not the 409 case (already handled)
-      setValidationMessages((prev) => [
-        ...prev,
-        { text: extractErrorMessage(error), type: 'error' },
-      ]);
-    }
-    setPaymentProcessing(false);
+    setValidationMessages((prev) => [
+      ...prev,
+      { text: extractErrorMessage(error), type: 'error' },
+    ]);
+    setPaymentProcessing(false); // Moved here to catch all errors
   }
 };
 

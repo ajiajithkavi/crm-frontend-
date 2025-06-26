@@ -1110,7 +1110,7 @@ import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IoMdArrowBack } from "react-icons/io";
 import axios from "axios";
-import { motion } from "framer-motion"; // Added Framer Motion import
+import { motion } from "framer-motion";
 
 const BASE_URL = "https://crm-bcgg.onrender.com";
 const UPLOAD_URL = "https://z-backend-2xag.onrender.com/api/upload/type";
@@ -1133,7 +1133,7 @@ export default function BuildingList() {
   const [selectedBuilding, setSelectedBuilding] = useState(null);
   const [photoIndex, setPhotoIndex] = useState(0);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
-  const [dropdownOpenIndex, setDropdownOpenIndex] = useState(null); // Added for dropdown
+  const [dropdownOpenIndex, setDropdownOpenIndex] = useState(null);
   const [filterProject, setFilterProject] = useState("All");
   const [filterBuildingName, setFilterBuildingName] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -1158,7 +1158,6 @@ export default function BuildingList() {
   const [videoFiles, setVideoFiles] = useState([]);
   const [uploadingMedia, setUploadingMedia] = useState(false);
 
-  // Property types for dropdown
   const type = [
     "Residential",
     "Commercial",
@@ -1168,7 +1167,6 @@ export default function BuildingList() {
     "Special Purpose",
   ];
 
-  // Fetch buildings and projects on component mount
   useEffect(() => {
     fetchBuildings();
     fetchProjectDetails();
@@ -1185,7 +1183,7 @@ export default function BuildingList() {
     try {
       setIsLoading(true);
       const response = await axiosInstance.get(
-        `/api/properties//buildings/by-project/${id}`
+        `/api/properties/buildings/by-project/${id}`
       );
       setBuildings(response.data);
     } catch (error) {
@@ -1211,7 +1209,6 @@ export default function BuildingList() {
 
   const openModal = (building = null) => {
     if (building) {
-      // Edit mode
       setSelectedBuilding(building);
       setIsEditMode(true);
       setValue("project", building.project._id || building.project);
@@ -1221,12 +1218,11 @@ export default function BuildingList() {
       setValue("buildingArea", building.buildingArea);
       setValue("priceRange", building.priceRange);
       setValue("type", building.type);
-
+      setValue("mapView", building.mapView || "");
       setAmenities(building.amenities || []);
       setPhotos(building.photos || []);
       setVideos(building.videos || []);
     } else {
-      // Add mode
       reset();
       setAmenities([]);
       setPhotos([]);
@@ -1416,6 +1412,7 @@ export default function BuildingList() {
         amenities,
         photos: photos.filter((p) => typeof p === "string"),
         videos: videos.filter((v) => typeof v === "string"),
+        mapView: data.mapView || "",
       };
 
       if (isEditMode && selectedBuilding) {
@@ -1517,7 +1514,7 @@ export default function BuildingList() {
             placeholder="Filter by building name"
             value={filterBuildingName}
             onChange={(e) => setFilterBuildingName(e.target.value)}
-            className="border rounded p-2"
+            className="border rounded p-2 w-64"
           />
         </div>
         <button
@@ -1783,6 +1780,36 @@ export default function BuildingList() {
                 />
               </div>
 
+              {/* Map View URL */}
+              <div>
+                <label
+                  htmlFor="mapView"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Map View URL
+                </label>
+                <input
+                  type="text"
+                  id="mapView"
+                  {...register("mapView", {
+                    pattern: {
+                      value: /^https?:\/\/.+/,
+                      message:
+                        "Map view must be a valid URL starting with http:// or https://",
+                    },
+                  })}
+                  className={`w-full px-3 py-2 border rounded-md ${
+                    errors.mapView ? "border-red-500" : "border-gray-300"
+                  }`}
+                  placeholder="Enter map view URL"
+                />
+                {errors.mapView && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.mapView.message}
+                  </p>
+                )}
+              </div>
+
               {/* Price Range */}
               <div>
                 <label
@@ -1876,14 +1903,14 @@ export default function BuildingList() {
                       <span className="text-sm text-gray-600">
                         Select photos
                       </span>
-                      <input
-                        type="file"
-                        multiple
-                        accept="image/jpeg,image/png,image/gif"
-                        onChange={(e) => handleFileUpload(e, "photo")}
-                        className="hidden"
-                        disabled={uploadingMedia}
-                      />
+                     <input
+  type="file"
+  multiple
+  accept="image/jpeg,image/png,image/gif"
+  onChange={(e) => handleFileUpload(e, "photo")}
+  className="hidden max-files-5"
+  disabled={uploadingMedia}
+/>
                     </div>
                   </label>
                   <span className="text-sm text-gray-500">
@@ -1928,7 +1955,7 @@ export default function BuildingList() {
                         multiple
                         accept="video/mp4,video/webm"
                         onChange={(e) => handleFileUpload(e, "video")}
-                        className="hidden"
+                        className="hidden max-files-5"
                         disabled={uploadingMedia}
                       />
                     </div>

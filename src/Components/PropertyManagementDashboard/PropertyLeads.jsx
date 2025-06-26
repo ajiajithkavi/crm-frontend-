@@ -685,8 +685,7 @@ const PropertyLeads = () => {
           items={leadsInStatus.map((l) => l._id)}
           strategy={rectSortingStrategy}
         >
-          <div className="min-h-[100px]">
-            {leadsInStatus.length > 0 ? (
+<div className="min-h-[100px] max-h-[500px] overflow-y-auto">            {leadsInStatus.length > 0 ? (
               leadsInStatus.map((lead) => (
                 <SortableLead key={lead._id} lead={lead} />
               ))
