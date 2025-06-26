@@ -1340,7 +1340,7 @@ export default function ProjectManagement() {
                       <p className="text-lg mt-1 text-red-600 font-semibold">
                         {project.price
                           ? typeof project.price === "number"
-                            ? `$${parseFloat(project.price).toLocaleString()}`
+                            ? `${parseFloat(project.price).toLocaleString()}`
                             : project.price
                           : "Contact for Price"}
                       </p>

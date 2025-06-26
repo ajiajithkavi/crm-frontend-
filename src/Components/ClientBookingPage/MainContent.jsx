@@ -1895,6 +1895,23 @@ function ArihantPage() {
   const [token, setToken] = useState("");
   const [bookmarks, setBookmarks] = useState([]);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [validationMessages, setValidationMessages] = useState([]);
+
+
+  const extractErrorMessage = (error) => {
+  if (error.response && error.response.data) {
+    const { data } = error.response;
+    if (data.message) return data.message;
+    if (data.error) return data.error;
+    if (data.errors) {
+      if (Array.isArray(data.errors)) return data.errors[0];
+      if (typeof data.errors === 'object') {
+        return Object.values(data.errors)[0] || 'An unexpected error occurred';
+      }
+    }
+  }
+  return error.message || 'An unexpected error occurred. Please try again.';
+};
 
   // Persist state to sessionStorage
   useEffect(() => {
@@ -1966,181 +1983,213 @@ function ArihantPage() {
 
     fetchBookmarks();
   }, [token, selectedUnit?._id, navigate, buildingid, builderId]);
-
-  const toggleBookmark = async () => {
-    const userData = JSON.parse(sessionStorage.getItem("logindata"));
-    if (!userData) {
-      sessionStorage.setItem("redirectPath", window.location.pathname);
-      sessionStorage.setItem("buildingId", buildingid);
-      sessionStorage.setItem("builderId", builderId);
-      if (selectedUnit) {
-        sessionStorage.setItem("unitId", selectedUnit._id);
-      }
-
-      navigate("/login", {
-        state: {
-          from: window.location.pathname,
-          buildingId: buildingid,
-          builderId: builderId,
-          unitId: selectedUnit?._id || null,
-        },
-      });
-      return;
+const toggleBookmark = async () => {
+  const userData = JSON.parse(sessionStorage.getItem('logindata'));
+  if (!userData) {
+    sessionStorage.setItem('redirectPath', window.location.pathname);
+    sessionStorage.setItem('buildingId', buildingid);
+    sessionStorage.setItem('builderId', builderId);
+    if (selectedUnit) {
+      sessionStorage.setItem('unitId', selectedUnit._id);
     }
+    setValidationMessages((prev) => [
+      ...prev,
+      { text: 'Please log in to bookmark a unit.', type: 'error' },
+    ]);
+    navigate('/login', {
+      state: {
+        from: window.location.pathname,
+        buildingId: buildingid,
+        builderId: builderId,
+        unitId: selectedUnit?._id || null,
+      },
+    });
+    return;
+  }
 
-    if (!selectedUnit?._id) {
-      alert("Please select a unit to bookmark");
-      return;
-    }
+  if (!selectedUnit?._id) {
+    setValidationMessages((prev) => [
+      ...prev,
+      { text: 'Please select a unit to bookmark.', type: 'error' },
+    ]);
+    return;
+  }
 
-    setBookmarkActionLoading(true);
+  setBookmarkActionLoading(true);
 
-    try {
-      const existingBookmark = bookmarks.find(
-        (bookmark) => bookmark.unit?._id === selectedUnit._id
-      );
+  try {
+    const existingBookmark = bookmarks.find(
+      (bookmark) => bookmark.unit?._id === selectedUnit._id
+    );
 
-      if (existingBookmark?._id) {
-        // Unbookmark - DELETE request
-        const response = await fetch(
-          `${BASE_URL}/api/saved-property/${existingBookmark._id}`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (response.ok) {
-          // Update state immediately
-          setBookmarks(bookmarks.filter((b) => b._id !== existingBookmark._id));
-          setIsBookmarked(false);
-        } else if (response.status === 401) {
-          // Handle unauthorized access
-          sessionStorage.removeItem("logindata");
-          navigate("/login", {
-            state: {
-              from: window.location.pathname,
-              buildingId: buildingid,
-              builderId: builderId,
-              unitId: selectedUnit._id,
-            },
-          });
-          throw new Error("Unauthorized access. Please log in again.");
-        } else {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(
-            errorData.message || `Failed to remove bookmark: ${response.status}`
-          );
-        }
-      } else {
-        // Bookmark - POST request
-        const response = await fetch(`${BASE_URL}/api/saved-property`, {
-          method: "POST",
+    if (existingBookmark?._id) {
+      // Unbookmark - DELETE request
+      const response = await fetch(
+        `${BASE_URL}/api/saved-property/${existingBookmark._id}`,
+        {
+          method: 'DELETE',
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            unitId: selectedUnit._id,
-          }),
-        });
+        }
+      );
 
-        if (response.ok) {
-          const savedProperty = await response.json();
-          setBookmarks([...bookmarks, savedProperty]);
-          setIsBookmarked(true);
-        } else if (
-          response.status === 400 &&
-          (await response.json()).message === "Already saved"
-        ) {
-          // Handle case where bookmark already exists
-          setIsBookmarked(true);
-        } else if (response.status === 401) {
-          sessionStorage.removeItem("logindata");
-          navigate("/login", {
-            state: {
-              from: window.location.pathname,
-              buildingId: buildingid,
-              builderId: builderId,
-              unitId: selectedUnit._id,
-            },
-          });
-          throw new Error("Unauthorized access. Please log in again.");
-        } else {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(
-            errorData.message || `Failed to save bookmark: ${response.status}`
-          );
-        }
+      if (response.ok) {
+        setBookmarks(bookmarks.filter((b) => b._id !== existingBookmark._id));
+        setIsBookmarked(false);
+        setValidationMessages((prev) => [
+          ...prev,
+          { text: 'Unit removed from bookmarks.', type: 'success' },
+        ]);
+      } else if (response.status === 401) {
+        setValidationMessages((prev) => [
+          ...prev,
+          { text: 'Unauthorized access. Please log in again.', type: 'error' },
+        ]);
+        sessionStorage.removeItem('logindata');
+        navigate('/login', {
+          state: {
+            from: window.location.pathname,
+            buildingId: buildingid,
+            builderId: builderId,
+            unitId: selectedUnit._id,
+          },
+        });
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setValidationMessages((prev) => [
+          ...prev,
+          { text: extractErrorMessage({ response: { data: errorData } }), type: 'error' },
+        ]);
       }
-    } catch (error) {
-      console.error("Error toggling bookmark:", error.message);
-      alert("An error occurred while updating bookmark status");
-    } finally {
-      setBookmarkActionLoading(false);
-      // Re-fetch bookmarks to ensure state consistency
-      if (token && selectedUnit?._id) {
-        try {
-          const response = await fetch(`${BASE_URL}/api/saved-property`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          if (response.ok) {
-            const data = await response.json();
-            setBookmarks(data);
-            const isUnitBookmarked = data.some(
-              (b) => b.unit?._id === selectedUnit._id
-            );
-            setIsBookmarked(isUnitBookmarked);
-          }
-        } catch (fetchError) {
-          console.error("Error re-fetching bookmarks:", fetchError.message);
-        }
+    } else {
+      // Bookmark - POST request
+      const response = await fetch(`${BASE_URL}/api/saved-property`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          unitId: selectedUnit._id,
+        }),
+      });
+
+      if (response.ok) {
+        const savedProperty = await response.json();
+        setBookmarks([...bookmarks, savedProperty]);
+        setIsBookmarked(true);
+        setValidationMessages((prev) => [
+          ...prev,
+          { text: 'Unit added to bookmarks.', type: 'success' },
+        ]);
+      } else if (response.status === 400 && (await response.json()).message === 'Already saved') {
+        setIsBookmarked(true);
+        setValidationMessages((prev) => [
+          ...prev,
+          { text: 'Unit is already bookmarked.', type: 'error' },
+        ]);
+      } else if (response.status === 401) {
+        setValidationMessages((prev) => [
+          ...prev,
+          { text: 'Unauthorized access. Please log in again.', type: 'error' },
+        ]);
+        sessionStorage.removeItem('logindata');
+        navigate('/login', {
+          state: {
+            from: window.location.pathname,
+            buildingId: buildingid,
+            builderId: builderId,
+            unitId: selectedUnit._id,
+          },
+        });
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setValidationMessages((prev) => [
+          ...prev,
+          { text: extractErrorMessage({ response: { data: errorData } }), type: 'error' },
+        ]);
       }
     }
-  };
+  } catch (error) {
+    setValidationMessages((prev) => [
+      ...prev,
+      { text: extractErrorMessage(error), type: 'error' },
+    ]);
+  } finally {
+    setBookmarkActionLoading(false);
+    if (token && selectedUnit?._id) {
+      try {
+        const response = await fetch(`${BASE_URL}/api/saved-property`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setBookmarks(data);
+          const isUnitBookmarked = data.some(
+            (b) => b.unit?._id === selectedUnit._id
+          );
+          setIsBookmarked(isUnitBookmarked);
+        }
+      } catch (fetchError) {
+        setValidationMessages((prev) => [
+          ...prev,
+          { text: extractErrorMessage(fetchError), type: 'error' },
+        ]);
+      }
+    }
+  }
+};
 
   /* ========== PROPERTY DATA FETCHING ========== */
   useEffect(() => {
-    const fetchBuildings = async () => {
-      try {
-        const response = await fetch(
-          `${BASE_URL}/api/propertiesGet/building/${buildingid}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (!response.ok) throw new Error("Failed to fetch buildings");
-        const data = await response.json();
+  const fetchBuildings = async () => {
+    try {
+      const response = await fetch(
+        `${BASE_URL}/api/propertiesGet/building/${buildingid}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        setValidationMessages((prev) => [
+          ...prev,
+          { text: `Failed to fetch buildings: ${response.statusText}`, type: 'error' },
+        ]);
+        throw new Error('Failed to fetch buildings');
+      }
+      const data = await response.json();
 
-        const buildingsArray = Array.isArray(data) ? data : [data];
-        setBuildings(buildingsArray);
-        setLoading((prev) => ({ ...prev, buildings: false }));
+      const buildingsArray = Array.isArray(data) ? data : [data];
+      setBuildings(buildingsArray);
+      setLoading((prev) => ({ ...prev, buildings: false }));
 
-        if (buildingid) {
-          const building =
-            buildingsArray.find((b) => b._id === buildingid) || data;
-          if (building) {
-            setSelectedBuilding(building);
-            setBuildingData(building);
-            if (building.photos && building.photos.length > 0) {
-              setBuildingImage(building.photos[0]);
-            }
+      if (buildingid) {
+        const building =
+          buildingsArray.find((b) => b._id === buildingid) || data;
+        if (building) {
+          setSelectedBuilding(building);
+          setBuildingData(building);
+          if (building.photos && building.photos.length > 0) {
+            setBuildingImage(building.photos[0]);
           }
         }
-      } catch (error) {
-        console.error("Error fetching buildings:", error);
-        setLoading((prev) => ({ ...prev, buildings: false }));
       }
-    };
+    } catch (error) {
+      setValidationMessages((prev) => [
+        ...prev,
+        { text: extractErrorMessage(error), type: 'error' },
+      ]);
+      setLoading((prev) => ({ ...prev, buildings: false }));
+    }
+  };
 
-    fetchBuildings();
-  }, [buildingid, token]);
+  fetchBuildings();
+}, [buildingid, token]);
 
   useEffect(() => {
     if (!selectedBuilding) return;
@@ -2148,57 +2197,137 @@ function ArihantPage() {
     setBuildingImage(selectedBuilding.photos[0]);
   }, [selectedBuilding]);
 
-  useEffect(() => {
-    const fetchFloors = async () => {
-      if (!selectedBuilding?._id) return;
-      setLoading((prev) => ({ ...prev, floors: true }));
-      try {
-        const response = await fetch(
-          `${BASE_URL}/api/properties/floors/by-building/${selectedBuilding._id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (!response.ok) throw new Error("Failed to fetch floors");
-        const data = await response.json();
-        setFloors(Array.isArray(data) ? data : []);
-        setLoading((prev) => ({ ...prev, floors: false }));
-      } catch (error) {
-        console.error("Error fetching floors:", error);
-        setLoading((prev) => ({ ...prev, floors: false }));
+useEffect(() => {
+  const fetchFloors = async () => {
+    if (!selectedBuilding?._id) return;
+    setLoading((prev) => ({ ...prev, floors: true }));
+    try {
+      const response = await fetch(
+        `${BASE_URL}/api/properties/floors/by-building/${selectedBuilding._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        setValidationMessages((prev) => [
+          ...prev,
+          { text: `Failed to fetch floors: ${response.statusText}`, type: 'error' },
+        ]);
+        throw new Error('Failed to fetch floors');
       }
-    };
+      const data = await response.json();
+      setFloors(Array.isArray(data) ? data : []);
+      setLoading((prev) => ({ ...prev, floors: false }));
+    } catch (error) {
+      setValidationMessages((prev) => [
+        ...prev,
+        { text: extractErrorMessage(error), type: 'error' },
+      ]);
+      setLoading((prev) => ({ ...prev, floors: false }));
+    }
+  };
 
-    fetchFloors();
-  }, [selectedBuilding, token]);
+  fetchFloors();
+}, [selectedBuilding, token]);
+
+useEffect(() => {
+  const fetchUnits = async () => {
+    if (!selectedFloor?._id) return;
+    setLoading((prev) => ({ ...prev, units: true }));
+    try {
+      const response = await fetch(
+        `${BASE_URL}/api/properties/units/by-floor/${selectedFloor._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        setValidationMessages((prev) => [
+          ...prev,
+          { text: `Failed to fetch units: ${response.statusText}`, type: 'error' },
+        ]);
+        throw new Error('Failed to fetch units');
+      }
+      const data = await response.json();
+      setUnits(data ? data : []);
+      setLoading((prev) => ({ ...prev, units: false }));
+    } catch (error) {
+      setValidationMessages((prev) => [
+        ...prev,
+        { text: extractErrorMessage(error), type: 'error' },
+      ]);
+      setLoading((prev) => ({ ...prev, units: false }));
+    }
+  };
+
+  fetchUnits();
+}, [selectedFloor, token]);
+
+  /* ========== error message  ========== */
 
   useEffect(() => {
-    const fetchUnits = async () => {
-      if (!selectedFloor?._id) return;
-      setLoading((prev) => ({ ...prev, units: true }));
-      try {
-        const response = await fetch(
-          `${BASE_URL}/api/properties/units/by-floor/${selectedFloor._id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (!response.ok) throw new Error("Failed to fetch units");
-        const data = await response.json();
-        setUnits(data ? data : []);
-        setLoading((prev) => ({ ...prev, units: false }));
-      } catch (error) {
-        console.error("Error fetching units:", error);
-        setLoading((prev) => ({ ...prev, units: false }));
-      }
-    };
+  if (validationMessages.length > 0) {
+    const timer = setTimeout(() => {
+      setValidationMessages([]);
+    }, 4000);
+    return () => clearTimeout(timer);
+  }
+}, [validationMessages]);
 
-    fetchUnits();
-  }, [selectedFloor, token]);
+
+useEffect(() => {
+  const fetchBookmarks = async () => {
+    if (!token || !selectedUnit?._id) return;
+    setBookmarkLoading(true);
+    try {
+      const response = await fetch(`${BASE_URL}/api/saved-property`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setBookmarks(data);
+        const isUnitBookmarked = data.some(
+          (b) => b.unit?._id === selectedUnit._id
+        );
+        setIsBookmarked(isUnitBookmarked);
+      } else if (response.status === 401) {
+        setValidationMessages((prev) => [
+          ...prev,
+          { text: 'Unauthorized access. Please log in again.', type: 'error' },
+        ]);
+        sessionStorage.removeItem('logindata');
+        navigate('/login', {
+          state: {
+            from: window.location.pathname,
+            buildingId: buildingid,
+            builderId: builderId,
+            unitId: selectedUnit?._id || null,
+          },
+        });
+      } else {
+        setValidationMessages((prev) => [
+          ...prev,
+          { text: `Failed to fetch bookmarks: ${response.statusText}`, type: 'error' },
+        ]);
+      }
+    } catch (error) {
+      setValidationMessages((prev) => [
+        ...prev,
+        { text: extractErrorMessage(error), type: 'error' },
+      ]);
+    } finally {
+      setBookmarkLoading(false);
+    }
+  };
+
+  fetchBookmarks();
+}, [token, selectedUnit?._id, navigate, buildingid, builderId]);
 
   /* ========== UI HANDLERS ========== */
   const handleToggle = () => setIsExpanded(!isExpanded);
@@ -2250,213 +2379,278 @@ function ArihantPage() {
     });
   };
 
-  const postToLeads = async (unitId) => {
-    try {
-      const response = await fetch(`${BASE_URL}/api/leads/auto`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          unitId: unitId,
-        }),
-      });
+ const postToLeads = async (unitId) => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/leads/auto`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        unitId: unitId,
+      }),
+    });
 
-      if (!response.ok) {
-        throw new Error("Failed to create lead");
-      }
-      return await response.json();
-    } catch (error) {
-      console.error("Error creating lead:", error);
-      throw error;
+    if (!response.ok) {
+      setValidationMessages((prev) => [
+        ...prev,
+        { text: `Failed to create lead: ${response.statusText}`, type: 'error' },
+      ]);
+      throw new Error('Failed to create lead');
     }
-  };
+    return await response.json();
+  } catch (error) {
+    setValidationMessages((prev) => [
+      ...prev,
+      { text: extractErrorMessage(error), type: 'error' },
+    ]);
+    throw error;
+  }
+};
 
-  const createRazorpayOrder = async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/api/transactions/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          amount: selectedUnit.price.totalPrice,
-          builderId: builderId,
-          propertyId: selectedUnit._id,
-        }),
-      });
-
-      if (!response.ok) {
-        Rosalie;
-        throw new Error("Failed to create Razorpay order");
-      }
-
-      const data = await response.json();
-
-      if (!data.order || !data.order.id) {
-        throw new Error("Invalid order data received from server");
-      }
-
-      return data.order.id;
-    } catch (error) {
-      console.error("Error creating Razorpay order:", error);
-      throw error;
-    }
-  };
-
-  const verifyPayment = async (paymentData) => {
-    try {
-      const verificationData = {
-        razorpay_order_id: paymentData.razorpay_order_id,
-        razorpay_payment_id: paymentData.razorpay_payment_id,
-        razorpay_signature: paymentData.razorpay_signature,
-      };
-
-      const response = await fetch(`${BASE_URL}/api/transactions/verify`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(verificationData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Payment verification failed");
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("Error verifying payment:", error);
-      throw error;
-    }
-  };
-
-  const handleBookNow = async () => {
-    if (!selectedUnit) return;
-    if (paymentProcessing) return;
-
-    const userData = JSON.parse(sessionStorage.getItem("logindata"));
-    if (!userData) {
-      sessionStorage.setItem("redirectPath", window.location.pathname);
-      sessionStorage.setItem("buildingId", buildingid);
-      sessionStorage.setItem("builderId", builderId);
-
-      navigate("/login", {
-        state: {
-          from: window.location.pathname,
-          buildingId: buildingid,
-          builderId: builderId,
-        },
-      });
-      return;
-    }
-
-    setPaymentProcessing(true);
-
-    try {
-      const bookingResponse = await fetch(`${BASE_URL}/api/booking`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${userData.token}`,
-        },
-        body: JSON.stringify({
-          unitId: selectedUnit._id,
-        }),
-      });
-
-      if (!bookingResponse.ok) {
-        throw new Error("Booking failed");
-      }
-
-      const razorpayLoaded = await loadRazorpayScript();
-      if (!razorpayLoaded) {
-        throw new Error("Razorpay SDK failed to load");
-      }
-
-      const orderId = await createRazorpayOrder();
-
-      const options = {
-        key: "rzp_test_E0aQEsxCsOjngr",
+ const createRazorpayOrder = async () => {
+  try {
+    const response = await fetch(`${BASE_URL}/api/transactions/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
         amount: selectedUnit.price.totalPrice,
-        currency: "INR",
-        name: "ABV Properties",
-        description: `Booking for Unit ${selectedUnit.unitNumber}`,
-        order_id: orderId,
-        handler: async function (response) {
-          try {
-            console.log("Full Razorpay response:", response);
+        builderId: builderId,
+        propertyId: selectedUnit._id,
+      }),
+    });
 
-            const isVerified = await verifyPayment({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            });
+    if (response.status === 409) {
+      setValidationMessages((prev) => [
+        ...prev,
+        { text: 'This property already has a transaction and cannot be booked again.', type: 'error' },
+      ]);
+      throw new Error('This property already has a transaction and cannot be booked again');
+    }
 
-            if (isVerified) {
-              setBookingSuccess(true);
-              navigate("/popperpage", {
-                state: {
-                  paymentSuccess: true,
-                  unitDetails: selectedUnit,
-                },
-              });
-            } else {
-              await postToLeads(selectedUnit._id);
-              alert("Payment verification failed. Please contact support.");
-            }
-          } catch (error) {
-            console.error("Payment processing error:", error);
-            await postToLeads(selectedUnit._id);
-            alert(`Payment failed: ${error.message}`);
-          } finally {
-            setPaymentProcessing(false);
-          }
-        },
-        prefill: {
-          name: "Customer Name",
-          email: "customer@example.com",
-          contact: "9999999999",
-        },
-        theme: {
-          color: "#FAE696",
-        },
-      };
+    if (!response.ok) {
+      setValidationMessages((prev) => [
+        ...prev,
+        { text: `Failed to create Razorpay order: ${response.statusText}`, type: 'error' },
+      ]);
+      throw new Error('Failed to create Razorpay order');
+    }
 
-      const rzp = new window.Razorpay(options);
+    const data = await response.json();
 
-      rzp.on("payment.failed", async function (response) {
-        console.error("Payment Failed:", response.error);
+    if (!data.order || !data.order.id) {
+      setValidationMessages((prev) => [
+        ...prev,
+        { text: 'Invalid order data received from server.', type: 'error' },
+      ]);
+      throw new Error('Invalid order data received from server');
+    }
+
+    return data.order.id;
+  } catch (error) {
+    setValidationMessages((prev) => [
+      ...prev,
+      { text: extractErrorMessage(error), type: 'error' },
+    ]);
+    throw error;
+  }
+};
+const verifyPayment = async (paymentData) => {
+  try {
+    const verificationData = {
+      razorpay_order_id: paymentData.razorpay_order_id,
+      razorpay_payment_id: paymentData.razorpay_payment_id,
+      razorpay_signature: paymentData.razorpay_signature,
+    };
+
+    const response = await fetch(`${BASE_URL}/api/transactions/verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(verificationData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      setValidationMessages((prev) => [
+        ...prev,
+        { text: errorData.message || 'Payment verification failed.', type: 'error' },
+      ]);
+      throw new Error(errorData.message || 'Payment verification failed');
+    }
+
+    return await response.json();
+  } catch (error) {
+    setValidationMessages((prev) => [
+      ...prev,
+      { text: extractErrorMessage(error), type: 'error' },
+    ]);
+    throw error;
+  }
+};
+
+const handleBookNow = async () => {
+  if (!selectedUnit) {
+    setValidationMessages((prev) => [
+      ...prev,
+      { text: 'Please select a unit to book.', type: 'error' },
+    ]);
+    return;
+  }
+  if (paymentProcessing) return;
+
+  const userData = JSON.parse(sessionStorage.getItem('logindata'));
+  if (!userData) {
+    sessionStorage.setItem('redirectPath', window.location.pathname);
+    sessionStorage.setItem('buildingId', buildingid);
+    sessionStorage.setItem('builderId', builderId);
+    setValidationMessages((prev) => [
+      ...prev,
+      { text: 'Please log in to book a unit.', type: 'error' },
+    ]);
+    navigate('/login', {
+      state: {
+        from: window.location.pathname,
+        buildingId: buildingid,
+        builderId: builderId,
+      },
+    });
+    return;
+  }
+
+  setPaymentProcessing(true);
+
+  try {
+    const bookingResponse = await fetch(`${BASE_URL}/api/booking`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${userData.token}`,
+      },
+      body: JSON.stringify({
+        unitId: selectedUnit._id,
+      }),
+    });
+
+    if (bookingResponse.status === 409) {
+      setValidationMessages((prev) => [
+        ...prev,
+        { text: 'This unit has already been booked by a customer.', type: 'error' },
+      ]);
+      await postToLeads(selectedUnit._id); // Create lead for interest tracking
+      return; // Stop execution to prevent further processing
+    }
+
+    if (!bookingResponse.ok) {
+      setValidationMessages((prev) => [
+        ...prev,
+        { text: `Booking failed: ${bookingResponse.statusText}`, type: 'error' },
+      ]);
+      throw new Error('Booking failed');
+    }
+
+    const razorpayLoaded = await loadRazorpayScript();
+    if (!razorpayLoaded) {
+      setValidationMessages((prev) => [
+        ...prev,
+        { text: 'Razorpay SDK failed to load.', type: 'error' },
+      ]);
+      throw new Error('Razorpay SDK failed to load');
+    }
+
+    const orderId = await createRazorpayOrder();
+
+    const options = {
+      key: 'rzp_test_E0aQEsxCsOjngr',
+      amount: selectedUnit.price.totalPrice,
+      currency: 'INR',
+      name: 'ABV Properties',
+      description: `Booking for Unit ${selectedUnit.unitNumber}`,
+      order_id: orderId,
+      handler: async function (response) {
         try {
-          await postToLeads(selectedUnit._id);
-          alert(`Payment failed: ${response.error.description}`);
+          const isVerified = await verifyPayment({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          });
+
+          if (isVerified) {
+            setBookingSuccess(true);
+            setValidationMessages((prev) => [
+              ...prev,
+              { text: 'Payment successful! Booking confirmed.', type: 'success' },
+            ]);
+            navigate('/popperpage', {
+              state: {
+                paymentSuccess: true,
+                unitDetails: selectedUnit,
+              },
+            });
+          } else {
+            await postToLeads(selectedUnit._id);
+            setValidationMessages((prev) => [
+              ...prev,
+              { text: 'Payment verification failed. Please contact support.', type: 'error' },
+            ]);
+          }
         } catch (error) {
-          console.error("Error creating lead after payment failure:", error);
-          alert(
-            "Payment failed and we couldn't save your interest. Please contact support."
-          );
+          await postToLeads(selectedUnit._id);
+          setValidationMessages((prev) => [
+            ...prev,
+            { text: `Payment failed: ${extractErrorMessage(error)}`, type: 'error' },
+          ]);
         } finally {
           setPaymentProcessing(false);
         }
-      });
+      },
+      prefill: {
+        name: 'Customer Name',
+        email: 'customer@example.com',
+        contact: '9999999999',
+      },
+      theme: {
+        color: '#FAE696',
+      },
+    };
 
-      rzp.open();
-    } catch (error) {
-      console.error("Error in booking/payment processing:", error);
+    const rzp = new window.Razorpay(options);
+
+    rzp.on('payment.failed', async function (response) {
       try {
         await postToLeads(selectedUnit._id);
-      } catch (leadError) {
-        console.error("Error creating lead:", leadError);
+        setValidationMessages((prev) => [
+          ...prev,
+          { text: `Payment failed: ${response.error.description}`, type: 'error' },
+        ]);
+      } catch (error) {
+        setValidationMessages((prev) => [
+          ...prev,
+          { text: 'Payment failed and we couldn’t save your interest. Please contact support.', type: 'error' },
+        ]);
+      } finally {
+        setPaymentProcessing(false);
       }
-      alert(`An error occurred: ${error.message}`);
-    } finally {
-      setPaymentProcessing(false);
+    });
+
+    rzp.open();
+  } catch (error) {
+    if (error.message !== 'This unit has already been booked by a customer') {
+      // Only add error message if it's not the 409 case (already handled)
+      setValidationMessages((prev) => [
+        ...prev,
+        { text: extractErrorMessage(error), type: 'error' },
+      ]);
     }
-  };
+    setPaymentProcessing(false);
+  }
+};
 
   /* ========== HELPER FUNCTIONS ========== */
   const customSelectStyles = {
@@ -2513,6 +2707,23 @@ function ArihantPage() {
 
   return (
     <div className="mx-auto bg-white">
+        {validationMessages.length > 0 && (
+  <div className="fixed top-4 right-4 space-y-2 z-50" aria-live="polite">
+    {validationMessages.map((message, index) => (
+      <div
+        key={index}
+        className={`border-l-4 p-4 rounded shadow-md flex justify-between items-center ${
+          message.type === 'success'
+            ? 'bg-green-100 border-green-500 text-green-700'
+            : 'bg-red-100 border-red-500 text-red-700'
+        }`}
+        role="alert"
+      >
+        <p>{message.text}</p>
+      </div>
+    ))}
+  </div>
+)}
       {/* Top Section */}
       <div className="flex flex-col gap-6 items-start p-4 mx-auto bg-white lg:flex-row">
         <div
@@ -2842,4 +3053,4 @@ function ArihantPage() {
   );
 }
 
-export default ArihantPage;
+export default ArihantPage; 

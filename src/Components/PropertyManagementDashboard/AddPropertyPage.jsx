@@ -402,7 +402,7 @@ export default function AddProperty() {
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
           </select>
-          <select
+          {/* <select
             className="border rounded p-2"
             value={filterBuilder}
             onChange={(e) => setFilterBuilder(e.target.value)}
@@ -410,7 +410,7 @@ export default function AddProperty() {
             <option value="Casagrand">Casagrand</option>
             <option value="Radiance">Radiance</option>
             <option value="Relator">Relator</option>
-          </select>
+          </select> */}
           <select
             className="border rounded p-2"
             value={filterPropertyType}
