@@ -242,7 +242,7 @@ const FeaturedProperties = () => {
           {shuffledProperties.map((property, index) => (
             <motion.div
               key={`${property.name}-${property.location}-${index}`}
-              className="rounded-xl overflow-hidden transition hover:shadow-xl"
+              className="rounded-xl overflow-hidden border border-gray-300 transition hover:shadow-xl"
               initial={{ opacity: 0, x: index % 2 === 0 ? -100 : 100 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 0 }}
@@ -252,7 +252,7 @@ const FeaturedProperties = () => {
               <img
                 src={property.image}
                 alt={property.name}
-                className="w-full h-48 object-cover"
+                className="mx-auto w-[150px] h-[180px] object-contain "
               />
               <div className="p-4">
                 <h3 className="text-lg font-semibold text-gray-800 mb-1 font-bold">
