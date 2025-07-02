@@ -215,11 +215,11 @@ const Apartments = ({ selectedStateId, searchData, setSelectedStateId,setSearchD
       ) : error ? (
         <div className="text-center py-10 text-red-500">{error}</div>
       ) : filteredProperties.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-5 gap-10 ">
           {filteredProperties.map((property) => (
             <div
               key={property._id}
-              className="relative w-full h-[300px] rounded-lg overflow-hidden shadow-md group cursor-pointer"
+              className="relative w-full h-[300px] rounded-lg overflow-hidden shadow-sm border border-gray-300 group cursor-pointer transition-transform duration-300 ease-in-out group-hover:scale-105"
               onClick={() => {
                 window.scrollTo({ top: 0, behavior: "smooth" });
                 navigate("/builder", {
@@ -227,28 +227,32 @@ const Apartments = ({ selectedStateId, searchData, setSelectedStateId,setSearchD
                 });
               }}
             >
-              <img
-                src={
-                  property.coverPhotos?.length > 0
-                    ? property.coverPhotos[0].url
-                    : property.logo
-                }
-                alt={property.companyName}
-                className="w-full h-full object-cover transition-transform group-hover:scale-105"
-              />
-              <div className="absolute top-2 left-2 bg-white bg-opacity-80 text-black text-xs font-medium px-3 py-1 rounded-r-lg shadow">
+              <div className="flex justify-center items-center">
+  {/* image here */}
+   <img
+  src={
+    property.coverPhotos?.length > 0
+      ? property.coverPhotos[0].url
+      : property.logo
+  }
+  alt={property.companyName}
+  className="mx-auto w-[150px] h-[180px] object-contain "
+/>
+</div>
+             
+              {/* <div className="absolute top-2 left-2 bg-white bg-opacity-80 text-black text-xs font-medium px-3 py-1 rounded-r-lg shadow">
                 {property.address?.city || "Unknown city"}
-              </div>
-              <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-sm px-3 py-1 rounded-l-lg shadow">
+              </div> */}
+              {/* <div className="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-sm px-3 py-1 rounded-l-lg shadow">
                 {property.companyName}
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4 text-white">
-                <h3 className="font-semibold">{property.companyName}</h3>
-                <p className="text-sm">
+              </div> */}
+              <div className="absolute bottom-0 left-0 right-0 h-[30%] bg-[#E8E8E8] p-4 text-black">
+                <h3 className="font-medium text-center">{property.companyName}</h3>
+                {/* <p className="text-sm">
                   {property.projects
                     ?.map((project) => project.propertyType)
                     .join(", ")}
-                </p>
+                </p> */}
               </div>
             </div>
           ))}
