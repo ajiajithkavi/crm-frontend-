@@ -246,9 +246,9 @@ function LandingPage() {
       <div ref={topProjectsRef}>
         <TopAppartmentProject />
       </div>
-      <div ref={individualHouseRef} id="feature-properties" tabIndex={-1}>
+{/*       <div ref={individualHouseRef} id="feature-properties" tabIndex={-1}>
         <FeatureProperties />
-      </div>
+      </div> */}
       {/* <FloorPlan /> */}
       <Review />
       <Footer />
