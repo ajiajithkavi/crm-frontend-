@@ -280,10 +280,10 @@
 
 
 
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
-import { MapPin, ArrowRight } from "lucide-react";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { motion } from "framer-motion";
 
@@ -324,7 +324,7 @@ const Apartments = ({ selectedStateId, searchData, setSelectedStateId, setSearch
     if (searchData) {
       setSelectedDistrict(searchData.districtid || "");
       setPropertyTypeFilter(searchData.propertytype || "");
-      setPriceRangeFilter(searchData.pricerange || "");
+      setPriceRangeFilter(searchData.priceRange || "");
     }
   }, [searchData]);
 
@@ -394,66 +394,57 @@ const Apartments = ({ selectedStateId, searchData, setSelectedStateId, setSearch
   const filteredProperties = Array.isArray(properties) ? properties : [];
 
   return (
-    <section className="max-w-7xl mx-auto px-4 py-10 mt-10 font-inter" id="apartments">
-      <style>
-        {`
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-          .font-inter {
-            font-family: 'Inter', sans-serif;
-          }
-        `}
-      </style>
-      
+    <section className="max-w-7xl mx-auto px-4 py-10 mt-10" id="apartments">
       {/* Filter Display */}
       {(selectedStateId || selectedDistrict || propertyTypeFilter || priceRangeFilter) && (
-        <div className="mb-8 flex flex-wrap items-center gap-2">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
           <span className="text-sm font-semibold text-gray-900">Filters:</span>
           {selectedStateId && (
-            <span className="text-xs font-medium bg-gray-100 px-2 py-1 rounded text-gray-600 border border-gray-300">
-              State: {selectedStateId}
+            <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
+              State ID: {selectedStateId}
             </span>
           )}
           {selectedDistrict && (
-            <span className="text-xs font-medium bg-gray-100 px-2 py-1 rounded text-gray-600 border border-gray-300">
+            <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
               District: {selectedDistrict}
             </span>
           )}
           {propertyTypeFilter && (
-            <span className="text-xs font-medium bg-gray-100 px-2 py-1 rounded text-gray-600 border border-gray-300">
+            <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
               Type: {propertyTypeFilter}
             </span>
           )}
           {priceRangeFilter && (
-            <span className="text-xs font-medium bg-gray-100 px-2 py-1 rounded text-gray-600 border border-gray-300">
+            <span className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
               Price: {priceRangeFilter}
             </span>
           )}
           <button
             onClick={clearAllFilters}
-            className="text-xs font-medium text-red-500 hover:text-red-700"
+            className="ml-2 text-xs text-red-500 hover:text-red-700"
           >
             Clear all
           </button>
         </div>
       )}
 
-      {/* Heading and Category Filters */}
-      <div className="text-center mb-16">
-        <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+      {/* Heading and View All */}
+      <div className="text-center mb-10">
+        {/* <div className="text-orange-500 text-sm font-light tracking-widest mb-4">
+          PROPERTY PORTFOLIO
+        </div> */}
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
           Explore Properties That Suit Your Lifestyle
         </h2>
-        <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-          Discover our curated selection of properties, offering unmatched quality and design.
-        </p>
         <div className="flex flex-wrap justify-center gap-3 mt-6">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelected(cat)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+              className={`px-4 py-2 rounded-full border text-sm transition-all duration-300 ${
                 selected === cat
                   ? "bg-orange-600 text-white border-orange-600"
-                  : "text-gray-700 border-gray-300 bg-transparent border hover:bg-gray-50"
+                  : "text-gray-700 border-gray-300 bg-transparent"
               }`}
             >
               {cat}
@@ -464,189 +455,109 @@ const Apartments = ({ selectedStateId, searchData, setSelectedStateId, setSearch
 
       {/* Property Grid */}
       {loading ? (
-        <div className="text-center py-10 text-gray-500 text-base font-medium">
+        <div className="text-center py-10 text-gray-500">
           Loading properties...
         </div>
       ) : error ? (
-        <div className="text-center py-10 text-red-500 text-base font-medium">{error}</div>
+        <div className="text-center py-10 text-red-500">{error}</div>
       ) : filteredProperties.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-          {filteredProperties.map((property, index) => (
-            <motion.div
-              key={property._id}
-              initial={{ opacity: 0, x: index % 2 === 0 ? -100 : 100 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0 }}
-              whileHover={{
-                scale: 1.05,
-                boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.2)",
-              }}
-              className="group relative overflow-hidden bg-white rounded-lg border border-gray-200 shadow-xl transition-all duration-500 hover:shadow-2xl"
-              onClick={() => {
-                window.scrollTo({ top: 0, behavior: "smooth" });
-                navigate("/builder", {
-                  state: { builderId: property._id },
-                });
-              }}
-            >
-              {/* Property Image */}
-              <div className="relative h-[250px] overflow-hidden shadow-sm flex items-center justify-center">
-                <img
-                  src={
-                    property.coverPhotos?.length > 0
-                      ? property.coverPhotos[0].url
-                      : property.logo ||
-                        "https://via.placeholder.com/300x180?text=No+Image"
-                  }
-                  alt={property.companyName}
-                  className="w-[180px] h-[180px] object-contain"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/10 to-transparent"></div>
-                {/* Property Type Badge */}
-                <div className="absolute top-4 right-4">
-                  <span className="text-xs font-medium bg-orange-600/90 text-white border border-orange-600 px-2 py-1 rounded">
-                    {property.projects?.[0]?.propertyType || "Property"}
+     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8">
+      {filteredProperties.map((property,index) => (
+        <motion.div
+        key={property._id}
+        initial={{ opacity: 0, x: index % 2 === 0 ? -100 : 100 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0 }}
+        whileHover={{
+          scale: 1.05,
+          boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.2)",
+        }}
+          className="group relative w-full h-[300px] flex flex-col justify-between overflow-hidden shadow-md transition-all duration-500 hover:shadow-lg bg-white rounded-lg border border-gray-200"
+          onClick={() => {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            navigate("/builder", {
+              state: { builderId: property._id },
+            });
+          }}
+        >
+          {/* Image Section */}
+          <div className="relative h-[180px] overflow-hidden shadow-sm flex items-center justify-center">
+            <img
+              src={
+                property.coverPhotos?.length > 0
+                  ? property.coverPhotos[0].url
+                  : property.logo ||
+                    "https://via.placeholder.com/300x180?text=No+Image"
+              }
+              alt={property.companyName}
+              className="w-[180px] h-[150px] object-contain"
+            />
+          </div>
+
+          {/* Content Section */}
+          <div className="p-4 flex flex-col flex-grow justify-between">
+            <div className="flex-grow">
+              <h3 className="text-lg font-bold text-gray-900 mb-1 break-words">
+                {property.companyName}
+              </h3>
+              {/* <div className="flex items-center text-gray-600 text-sm mb-2">
+                <FaMapMarkerAlt className="h-4 w-4 mr-2" />
+                <span className="truncate">
+                  {property.address?.city || "Unknown city"}
+                </span>
+              </div> */}
+
+              {/* Property Types */}
+              {/* <div className="flex flex-wrap gap-1.5">
+                {property.projects?.slice(0, 2).map((project, index) => (
+                  <span
+                    key={index}
+                    className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600"
+                  >
+                    {project.propertyType}
                   </span>
-                </div>
-              </div>
+                ))}
+                {property.projects?.length > 2 && (
+                  <span className="text-xs text-orange-500">
+                    +{property.projects.length - 2} more
+                  </span>
+                )}
+              </div> */}
+            </div>
 
-              {/* Content Section */}
-              <div className="p-6 flex flex-col justify-between min-h-[400px]">
-                <div>
-                  {/* Property Title */}
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4 truncate leading-tight">
-                    {property.companyName}
-                  </h3>
-
-                  {/* Location */}
-                  <div className="flex items-center text-gray-600 mb-4 text-base font-normal">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    <span>{property.address?.city || "Unknown city"}</span>
-                  </div>
-
-                  {/* Company Description */}
-                  <p className="text-gray-600 mb-6 text-base font-normal leading-relaxed line-clamp-3">
-                    {property.description || "Explore this exceptional property with premium features and prime location."}
-                  </p>
-
-                  {/* Features */}
-                  <div className="mb-6">
-                    <div className="text-sm font-semibold text-gray-900 mb-2">Key Features</div>
-                    <div className="flex flex-wrap gap-2">
-                      {property.features?.slice(0, 3).map((feature, index) => (
-                        <span
-                          key={index}
-                          className="text-xs font-medium bg-gray-100 px-2 py-1 rounded text-gray-600"
-                        >
-                          {feature}
-                        </span>
-                      )) || (
-                        <>
-                          <span className="text-xs font-medium bg-gray-100 px-2 py-1 rounded text-gray-600">
-                            Premium Amenities
-                          </span>
-                          <span className="text-xs font-medium bg-gray-100 px-2 py-1 rounded text-gray-600">
-                            Modern Design
-                          </span>
-                          <span className="text-xs font-medium bg-gray-100 px-2 py-1 rounded text-gray-600">
-                            Prime Location
-                          </span>
-                        </>
-                      )}
-                      {property.features?.length > 3 && (
-                        <span className="text-xs font-medium text-orange-600">
-                          +{property.features.length - 3} more
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Services */}
-                  <div className="mb-6">
-                    <div className="text-sm font-semibold text-gray-900 mb-2">Services</div>
-                    <div className="flex flex-wrap gap-2">
-                      {property.services?.slice(0, 3).map((service, index) => (
-                        <span
-                          key={index}
-                          className="text-xs font-medium bg-gray-100 px-2 py-1 rounded text-gray-600"
-                        >
-                          {service}
-                        </span>
-                      )) || (
-                        <>
-                          <span className="text-xs font-medium bg-gray-100 px-2 py-1 rounded text-gray-600">
-                            Concierge
-                          </span>
-                          <span className="text-xs font-medium bg-gray-100 px-2 py-1 rounded text-gray-600">
-                            Security
-                          </span>
-                          <span className="text-xs font-medium bg-gray-100 px-2 py-1 rounded text-gray-600">
-                            Maintenance
-                          </span>
-                        </>
-                      )}
-                      {property.services?.length > 3 && (
-                        <span className="text-xs font-medium text-orange-600">
-                          +{property.services.length - 3} more
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Property Types */}
-                  <div className="mb-6">
-                    <div className="text-sm font-semibold text-gray-900 mb-2">Property Types</div>
-                    <div className="flex flex-wrap gap-2">
-                      {property.projects?.slice(0, 3).map((project, index) => (
-                        <span
-                          key={index}
-                          className="text-xs font-medium bg-gray-100 px-2 py-1 rounded text-gray-600"
-                        >
-                          {project.propertyType}
-                        </span>
-                      ))}
-                      {property.projects?.length > 3 && (
-                        <span className="text-xs font-medium text-orange-600">
-                          +{property.projects.length - 3} more
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* CTA Button */}
-                <button
-                  className="w-full bg-gray-900 hover:bg-gray-800 text-white transition-all duration-300 px-6 py-3 rounded-lg text-base font-semibold flex items-center justify-center mt-auto"
-                >
-                  View Builder Details
-                  <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
-                </button>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+            {/* Button */}
+            <button
+              className="mt-4 w-full bg-gray-900 hover:bg-gray-800 text-white transition-all duration-300 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center"
+            >
+              View Builder Details
+              <span className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1">
+                →
+              </span>
+            </button>
+          </div>
+        </motion.div>
+      ))}
+    </div>
       ) : (
         <div className="text-center py-10">
-          <p className="text-gray-500 text-base font-medium">
+          <p className="text-gray-500">
             No properties found matching your filters.
           </p>
           <button
             onClick={clearAllFilters}
-            className="mt-4 text-orange-600 hover:underline text-base font-medium"
+            className="mt-4 text-orange-600 hover:underline"
           >
             Clear all filters
           </button>
         </div>
       )}
-
-      {/* View All Properties CTA */}
-      <div className="text-center">
+      <div className="text-center mt-10">
         <Link
           to="/login"
-          className="bg-orange-600 hover:bg-orange-700 text-white font-semibold px-8 py-4 rounded-lg text-lg transition-all duration-300 hover:shadow-xl hover:shadow-orange-600/25 inline-flex items-center"
+          className="bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-3 rounded-lg text-sm transition-all duration-300"
         >
-          View All Properties
-          <ArrowRight className="ml-2 h-5 w-5" />
+          View All Builders
+          <span className="ml-2 inline-block">→</span>
         </Link>
       </div>
     </section>
@@ -654,3 +565,4 @@ const Apartments = ({ selectedStateId, searchData, setSelectedStateId, setSearch
 };
 
 export default Apartments;
+
