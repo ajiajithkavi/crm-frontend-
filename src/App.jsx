@@ -242,15 +242,15 @@ function LandingPage() {
           setSearchData={setSearchData} // Pass this if needed
         />
       </div>
-      <Whoweare />
-      <div ref={topProjectsRef}>
+      {/* <Whoweare /> */}
+      {/* <div ref={topProjectsRef}>
         <TopAppartmentProject />
-      </div>
-{/*       <div ref={individualHouseRef} id="feature-properties" tabIndex={-1}>
+      </div> */}
+      {/* <div ref={individualHouseRef} id="feature-properties" tabIndex={-1}>
         <FeatureProperties />
       </div> */}
       {/* <FloorPlan /> */}
-      <Review />
+      {/* <Review /> */}
       <Footer />
       {showGoToTop && (
         <button
