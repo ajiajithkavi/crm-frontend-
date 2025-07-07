@@ -774,7 +774,7 @@ import { FaSearch } from "react-icons/fa";
 import axios from "axios";
 import { Link,useNavigate } from "react-router-dom";
 import Popup from "./Popup";
-import NavLogo from "../HomePage/Assets/footerlogo copy.png";
+import NavLogo from "../HomePage/Assets/footerlogo.png";
 
 const heroSlides = [
   {
