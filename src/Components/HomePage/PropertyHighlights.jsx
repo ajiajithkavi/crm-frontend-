@@ -772,9 +772,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaSearch } from "react-icons/fa";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,Link } from "react-router-dom";
 import Popup from "./Popup";
 import NavLogo from "../HomePage/Assets/footerlogo copy.png";
+
 
 const heroSlides = [
   {
@@ -1044,9 +1045,11 @@ const PropertyHighlights = ({
             </button>
           </div>
           <div className="flex space-x-3">
+               <Link to="/login">
             <button className="px-4 py-2 bg-yellow-400 text-black rounded hover:bg-yellow-500 transition">
               Get Started
             </button>
+                 </Link>
           </div>
         </div>
       </nav>
