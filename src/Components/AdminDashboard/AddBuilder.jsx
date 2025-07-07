@@ -1087,6 +1087,7 @@ export default function BuildingList() {
   const [isLoading, setIsLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const navigate = useNavigate();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
   const {
     register,
@@ -1796,48 +1797,135 @@ export default function BuildingList() {
               </div>
 
               {/* Amenities */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Amenities
-                </label>
-                <div className="flex space-x-2">
-                  <input
-                    type="text"
-                    value={newAmenity}
-                    onChange={(e) => setNewAmenity(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && handleAddAmenity()}
-                    placeholder="Add amenity (e.g. Gym, Pool)"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddAmenity}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                  >
-                    Add
-                  </button>
-                </div>
-                {amenities.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {amenities.map((amenity, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center bg-gray-100 px-3 py-1 rounded-full"
-                      >
-                        <span className="text-sm">{amenity}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveAmenity(index)}
-                          className="ml-2 text-gray-500 hover:text-red-500"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+          <div>
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    Amenities
+  </label>
+  
+  {/* Selected Amenities Display */}
+  <div className="flex flex-wrap gap-2 mb-2">
+    {amenities.map((amenity, index) => {
+      const iconMap = {
+        'air conditioner': '❄️',
+        'fire extinguisher': '🧯',
+        'sports field': '🏟️',
+        'smoking area': '🚬',
+        'kids zone': '🧒',
+        'pet friendly': '🐶',
+        'elevator': '🛗',
+        'laundry': '🧺',
+        'swimming pool': '🏊‍♂️',
+        'gym': '🏋️',
+        'parking': '🚗',
+        'security': '🛡️',
+        '24x7 security': '🛡️',
+        'power backup': '🔌',
+        'clubhouse': '🏠',
+        'children play area': '🧸',
+        'garden': '🌳',
+        'cctv': '📹',
+        'surveillance': '📹'
+      };
+      
+      const lowerAmenity = amenity.toLowerCase();
+      const icon = Object.entries(iconMap).find(([key]) => 
+        lowerAmenity.includes(key)
+      )?.[1] || '✅';
 
+      return (
+        <div 
+          key={index}
+          className="flex items-center bg-gray-100 rounded-full px-3 py-1 text-sm"
+        >
+          <span className="mr-1">{icon}</span>
+          {amenity}
+          <button
+            type="button"
+            onClick={() => handleRemoveAmenity(index)}
+            className="ml-2 text-gray-500 hover:text-red-500"
+          >
+            ×
+          </button>
+        </div>
+      );
+    })}
+  </div>
+
+  {/* Dropdown Input */}
+  <div className="relative">
+    <div className="flex space-x-2">
+      <div className="flex-1 relative">
+        <input
+          type="text"
+          value={newAmenity}
+          onChange={(e) => {
+            setNewAmenity(e.target.value);
+            setIsDropdownOpen(true);
+          }}
+          onFocus={() => setIsDropdownOpen(true)}
+          onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
+          placeholder="Search or select amenities..."
+          className="w-full px-3 py-2 border border-gray-300 rounded-md"
+        />
+        {isDropdownOpen && (
+          <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+            {[
+              "❄️ Air Conditioner",
+              "🧯 Fire Extinguisher",
+              "🏟️ Sports Field",
+              "🚬 Smoking Area",
+              "🧒 Kids Zone",
+              "🐶 Pet Friendly",
+              "🛗 Elevator",
+              "🧺 Laundry",
+              "🏊‍♂️ Swimming Pool",
+              "🏋️ Gym ",
+              "🚗 Parking",
+              "🛡️ 24x7 Security",
+              "🔌 Power Backup",
+              "🏠 Clubhouse",
+              "🧸 Children's Play Area",
+              "🌳 Garden ",
+              "📹 CCTV Surveillance"
+            ]
+            .filter(option => 
+              option.toLowerCase().includes(newAmenity.toLowerCase())
+            )
+            .map((option, i) => (
+              <div
+                key={i}
+                className="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                onClick={() => {
+                  const amenityText = option.replace(/[^\w\s/]/g, '').trim();
+                  if (!amenities.includes(amenityText)) {
+                    setAmenities([...amenities, amenityText]);
+                  }
+                  setIsDropdownOpen(false);
+                  setNewAmenity("");
+                }}
+              >
+                {option}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={() => {
+          if (newAmenity.trim() && !amenities.includes(newAmenity.trim())) {
+            setAmenities([...amenities, newAmenity.trim()]);
+            setNewAmenity("");
+          }
+          setIsDropdownOpen(false);
+        }}
+        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+      >
+        Add
+      </button>
+    </div>
+  </div>
+</div>
               {/* Photos Upload */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
