@@ -84,7 +84,16 @@ const ThankYouPage = () => {
               BK-{Math.random().toString(36).substring(2, 10).toUpperCase()}
             </p>
           </div>
+              <button 
+      onClick={() => navigate('/user')}
+      className="text-black font-semibold rounded hover:bg-[#C8A158]/90 uppercase px-10 py-2 
+                bg-[#F5F5DC] shadow-md hover:shadow-lg transition-all duration-300"
+    >
+      Done
+    </button>
+
         </div>
+        
       </div>
 
       <p className="mt-8 text-gray-500 text-sm">
