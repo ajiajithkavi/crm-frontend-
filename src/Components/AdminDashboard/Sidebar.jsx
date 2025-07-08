@@ -148,7 +148,6 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import footerlogo from "../HomePage/Assets/logo.png";
 
-
 // React Icons
 import {
   FaTachometerAlt,
@@ -160,6 +159,7 @@ import {
   FaQuestionCircle,
   FaSignOutAlt,
   FaBullhorn,
+  FaCalendarAlt,
 } from "react-icons/fa";
 
 // Logo Image
@@ -195,6 +195,11 @@ const navItems = [
     icon: <FaBullhorn className="w-5 h-5 text-gray-600" />,
     label: "ADS Management",
     link: "/adspage",
+  },
+  {
+    icon: <FaCalendarAlt className="w-5 h-5 text-gray-600" />,
+    label: "Enquiry Form",
+    link: "/bookingform",
   },
 ];
 
@@ -240,9 +245,9 @@ const Sidebar = () => {
           />
         </Link>
       </div>
-        <nav className="flex-1 overflow-y-auto">
-          <ul className="space-y-2">
-            {navItems.map(({ icon, label, link }, idx) => {
+      <nav className="flex-1 overflow-y-auto">
+        <ul className="space-y-2">
+          {navItems.map(({ icon, label, link }, idx) => {
             const isActive = location.pathname === link;
             return (
               <li
@@ -295,7 +300,7 @@ const Sidebar = () => {
   return (
     <>
       {/* Mobile toggle button */}
-      <div className="lg:hidden flex items-center justify-between px-4 py-3 shadow bg-white">
+      <div className="lg:hidden flex items-center justify-between px-600 py-3 shadow bg-white">
         <img src={sidebarlogo} alt="Logo" className="h-10" />
         <button onClick={() => setIsOpen(!isOpen)} className="text-gray-600">
           {isOpen ? <X size={24} /> : <Menu size={24} />}

@@ -1896,6 +1896,26 @@ function ArihantPage() {
   const [bookmarks, setBookmarks] = useState([]);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [validationMessages, setValidationMessages] = useState([]);
+ const [formData, setFormData] = useState({
+  firstName: '',
+  lastName: '',
+  country: 'India',
+  address: '',
+  city: '',
+  zipCode: '',
+  email: '',
+  phone: '',
+  note: '',
+})
+const [fieldErrors, setFieldErrors] = useState({
+  firstName: '',
+  lastName: '',
+  address: '',
+  city: '',
+  phone: '',
+  email: ''
+});
+const [formSubmitting, setFormSubmitting] = useState(false)
 
 
   const extractErrorMessage = (error) => {
@@ -1937,7 +1957,7 @@ function ArihantPage() {
     }
   }, []);
 
-  /* ========== BOOKMARK FUNCTIONALITY ========== */
+  
   /* ========== BOOKMARK FUNCTIONALITY ========== */
   useEffect(() => {
     const fetchBookmarks = async () => {
@@ -2689,6 +2709,166 @@ const handleBookNow = async () => {
     }));
   };
 
+  /* ========== form function ========== */
+
+const validateName = (name) => /^[A-Za-z\s]+$/.test(name);
+const validateText = (text) => /^[A-Za-z0-9\s,.]+$/.test(text);
+const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+const validatePhone = (phone) => /^[6-9]\d{9}$/.test(phone);
+
+
+
+
+
+
+
+const validateForm = () => {
+  const errors = [];
+  const newFieldErrors = { ...fieldErrors };
+
+  // Required field validation
+  if (!formData.firstName.trim()) {
+    newFieldErrors.firstName = 'First name is required';
+    errors.push('First name is required');
+  }
+
+  if (!formData.lastName.trim()) {
+    newFieldErrors.lastName = 'Last name is required';
+    errors.push('Last name is required');
+  }
+
+  if (!formData.address.trim()) {
+    newFieldErrors.address = 'Address is required';
+    errors.push('Address is required');
+  }
+
+  if (!formData.city.trim()) {
+    newFieldErrors.city = 'City is required';
+    errors.push('City is required');
+  }
+
+  if (!formData.phone.trim()) {
+    newFieldErrors.phone = 'Phone is required';
+    errors.push('Phone is required');
+  } else if (!validatePhone(formData.phone)) {
+    newFieldErrors.phone = 'Invalid Indian phone number';
+    errors.push('Invalid Indian phone number');
+  }
+
+  if (!formData.email.trim()) {
+    newFieldErrors.email = 'Email is required';
+    errors.push('Email is required');
+  } else if (!validateEmail(formData.email)) {
+    newFieldErrors.email = 'Invalid email format';
+    errors.push('Invalid email format');
+  }
+
+  setFieldErrors(newFieldErrors);
+  return errors;
+};
+
+
+const handleFormChange = (e) => {
+  const { name, value } = e.target;
+  let error = '';
+  let processedValue = value;
+
+  // Field-specific validation
+  switch(name) {
+    case 'firstName':
+    case 'lastName':
+      if (value && !validateName(value)) {
+        error = 'Only letters and spaces allowed';
+      }
+      break;
+      
+    case 'address':
+    case 'city':
+    case 'country':
+      if (value && !validateText(value)) {
+        error = 'Only letters, numbers, spaces, commas and periods allowed';
+      }
+      break;
+      
+    case 'phone':
+      processedValue = value.replace(/[^0-9]/g, '');
+      if (processedValue && !validatePhone(processedValue)) {
+        error = 'Must be 10 digits starting with 6-9';
+      }
+      break;
+      
+    case 'email':
+      if (value && !validateEmail(value)) {
+        error = 'Please enter a valid email';
+      }
+      break;
+  }
+
+  setFieldErrors(prev => ({ ...prev, [name]: error }));
+  setFormData(prev => ({
+    ...prev,
+    [name]: processedValue
+  }));
+};
+
+
+const handleFormSubmit = async (e) => {
+  e.preventDefault();
+  
+  const validationErrors = validateForm();
+  if (validationErrors.length > 0) {
+    setValidationMessages(validationErrors.map(text => ({ text, type: 'error' })));
+    return;
+  }
+
+  setFormSubmitting(true);
+  
+  try {
+    const response = await fetch(`${BASE_URL}/api/bookingform`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(formData)
+    });
+
+    if (!response.ok) throw new Error('Submission failed');
+
+    const data = await response.json();
+    setValidationMessages([{ text: 'Booking submitted successfully!', type: 'success' }]);
+    
+    // Reset form
+    setFormData({
+      firstName: '',
+      lastName: '',
+      country: 'India',
+      address: '',
+      city: '',
+      zipCode: '',
+      email: '',
+      phone: '',
+      note: ''
+    });
+    setFieldErrors({
+      firstName: '',
+      lastName: '',
+      address: '',
+      city: '',
+      phone: '',
+      email: ''
+    });
+    
+  } catch (error) {
+    setValidationMessages([{ text: extractErrorMessage(error), type: 'error' }]);
+  } finally {
+    setFormSubmitting(false);
+  }
+};
+
+
+
+
   /* ========== TEXT CONTENT ========== */
   const textPart1 = `One of our finest creations, in a neighborhood that checks all the boxes.
     Staying at Hunters Road means you are exceptionally close to business,
@@ -3061,66 +3241,158 @@ const handleBookNow = async () => {
     <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">
       Booking Details
     </h2>
-    <form className="space-y-4">
+    <form className="space-y-4" onSubmit={handleFormSubmit}>
       <div className="flex flex-col sm:flex-row gap-4">
+        <div className="w-full">
+          <input
+            type="text"
+            name="firstName"
+            value={formData.firstName}
+            onChange={handleFormChange}
+            placeholder="First name*"
+            required
+            className={`w-full border rounded px-3 py-2 focus:outline-none placeholder-gray-500 ${
+              fieldErrors.firstName ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-orange-500'
+            }`}
+          />
+          {fieldErrors.firstName && (
+            <p className="text-red-500 text-sm mt-1">{fieldErrors.firstName}</p>
+          )}
+        </div>
+        <div className="w-full">
+          <input
+            type="text"
+            name="lastName"
+            value={formData.lastName}
+            onChange={handleFormChange}
+            placeholder="Last name*"
+            required
+            className={`w-full border rounded px-3 py-2 focus:outline-none placeholder-gray-500 ${
+              fieldErrors.lastName ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-orange-500'
+            }`}
+          />
+          {fieldErrors.lastName && (
+            <p className="text-red-500 text-sm mt-1">{fieldErrors.lastName}</p>
+          )}
+        </div>
+      </div>
+
+      <div>
         <input
           type="text"
-          placeholder="First name*"
+          name="country"
+          value={formData.country}
+          onChange={handleFormChange}
+          placeholder="Country*"
           required
-          className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder-gray-500"
+          className={`w-full border rounded px-3 py-2 focus:outline-none placeholder-gray-500 ${
+            fieldErrors.country ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-orange-500'
+          }`}
         />
+        {fieldErrors.country && (
+          <p className="text-red-500 text-sm mt-1">{fieldErrors.country}</p>
+        )}
+      </div>
+
+      <div>
         <input
           type="text"
-          placeholder="Last name*"
+          name="address"
+          value={formData.address}
+          onChange={handleFormChange}
+          placeholder="Street Address*"
           required
+          className={`w-full border rounded px-3 py-2 focus:outline-none placeholder-gray-500 ${
+            fieldErrors.address ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-orange-500'
+          }`}
+        />
+        {fieldErrors.address && (
+          <p className="text-red-500 text-sm mt-1">{fieldErrors.address}</p>
+        )}
+      </div>
+
+      <div>
+        <input
+          type="text"
+          name="city"
+          value={formData.city}
+          onChange={handleFormChange}
+          placeholder="Town / City*"
+          required
+          className={`w-full border rounded px-3 py-2 focus:outline-none placeholder-gray-500 ${
+            fieldErrors.city ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-orange-500'
+          }`}
+        />
+        {fieldErrors.city && (
+          <p className="text-red-500 text-sm mt-1">{fieldErrors.city}</p>
+        )}
+      </div>
+
+      <div>
+        <input
+          type="text"
+          name="zipCode"
+          value={formData.zipCode}
+          onChange={handleFormChange}
+          placeholder="ZIP Code"
           className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder-gray-500"
         />
       </div>
-      <input
-        type="text"
-        placeholder="United States ( US )*"
-        required
-        className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder-gray-500"
-      />
-      <input
-        type="text"
-        placeholder="Street Address*"
-        required
-        className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder-gray-500"
-      />
-      <input
-        type="text"
-        placeholder="Town / City*"
-        required
-        className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder-gray-500"
-      />
-      <input
-        type="text"
-        placeholder="ZIP Code"
-        className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder-gray-500"
-      />
-      <input
-        type="email"
-        placeholder="Email Address*"
-        required
-        className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder-gray-500"
-      />
-      <input
-        type="text"
-        placeholder="Phone*"
-        required
-        className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder-gray-500"
-      />
-      <textarea
-        rows="3"
-        placeholder="Add Something"
-        className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder-gray-500"
-      />
+
+      <div>
+        <input
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleFormChange}
+          placeholder="Email Address*"
+          required
+          className={`w-full border rounded px-3 py-2 focus:outline-none placeholder-gray-500 ${
+            fieldErrors.email ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-orange-500'
+          }`}
+        />
+        {fieldErrors.email && (
+          <p className="text-red-500 text-sm mt-1">{fieldErrors.email}</p>
+        )}
+      </div>
+
+      <div>
+        <input
+          type="tel"
+          name="phone"
+          value={formData.phone}
+          onChange={handleFormChange}
+          placeholder="Phone* (10-digit Indian number)"
+          required
+          maxLength="10"
+          className={`w-full border rounded px-3 py-2 focus:outline-none placeholder-gray-500 ${
+            fieldErrors.phone ? 'border-red-500 focus:ring-red-300' : 'border-gray-300 focus:ring-orange-500'
+          }`}
+        />
+        {fieldErrors.phone && (
+          <p className="text-red-500 text-sm mt-1">{fieldErrors.phone}</p>
+        )}
+      </div>
+
+      <div>
+        <textarea
+          name="note"
+          value={formData.note}
+          onChange={handleFormChange}
+          rows="3"
+          placeholder="Additional notes"
+          className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder-gray-500"
+        />
+      </div>
+
       <button
         type="submit"
-        className="bg-orange-500 text-white px-6 py-2 rounded-md hover:bg-orange-600 transition font-semibold"
+        disabled={formSubmitting}
+        className={`bg-orange-500 text-white px-6 py-2 rounded-md hover:bg-orange-600 transition font-semibold ${
+          formSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+        }`}
       >
-        Submit
+        {formSubmitting ? 'Submitting...' : 'Submit'}
       </button>
     </form>
   </div>

@@ -31,6 +31,7 @@ import HelpPage from "./Components/AdminDashboard/HelpPage";
 import UserManagement from "./Components/AdminDashboard/UserManagement";
 import UserDetails from "./Components/AdminDashboard/UserDetails";
 import AdsPage from "./Components/AdminDashboard/AdsPage";
+import AdminBookingForm from "./Components/AdminDashboard/BookingForm";
 
 
 
@@ -352,6 +353,7 @@ function App() {
           <Route path="/user-details" element={<UserDetails />} />
           <Route path="/contactdeatils" element={<ContactDetails />} />
           <Route path="/adspage" element={<AdsPage />} />
+          <Route path="/bookingform" element={<AdminBookingForm />} />
         </Route>
 
         {/* new */}
