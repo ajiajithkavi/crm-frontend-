@@ -2969,7 +2969,7 @@ const handleFormSubmit = async (e) => {
     and you will feel like a dream coming true.`;
 
   return (
-    <div className="mx-auto bg-white">
+    <div className="mx-auto bg-white ">
         {validationMessages.length > 0 && (
   <div className="fixed top-4 right-4 space-y-2 z-50" aria-live="polite">
     {validationMessages.map((message, index) => (
@@ -2988,8 +2988,8 @@ const handleFormSubmit = async (e) => {
   </div>
 )}
       {/* Top Section */}
-      <div className="text-[60px] font-semibold ml-[20px]">About {buildingData?.buildingName || "Loading..."}</div>
-      <div className="flex flex-col gap-6 items-start p-4 mx-auto bg-white lg:flex-row">
+      <div className="text-[60px] font-semibold ml-[20px] pl-16 pt-8">About {buildingData?.buildingName || "Loading..."}</div>
+      <div className="flex flex-col gap-12 items-start pl-20 pr-20 mx-auto bg-white lg:flex-row">
         <div
           className="overflow-hidden relative mr-2 mt-4"
           style={{ width: "800px", height: "500px" }}
@@ -3057,9 +3057,9 @@ const handleFormSubmit = async (e) => {
         </div>
       </div>
 
-      <div className="flex flex-col gap-6 justify-center px-4 mx-auto my-10 max-w-9xl md:flex-row ml-0">
+      <div className="flex flex-col gap-6 justify-center pl-14 pr-20 mx-auto my-10 max-w-9xl md:flex-row ml-0">
         <div className="p-6 bg-white rounded-lg  w-[700px] ml-0 mr-auto gap-6">
-          <div className="bg-white rounded-lg p-6 shadow-xl">
+          <div className="bg-white rounded-lg p-6 drop-shadow-lg border-2">
           <h2 className="mb-6 text-2xl font-bold text-center text-gray-800">
             Select Available Spaces
           </h2>
@@ -3090,7 +3090,7 @@ const handleFormSubmit = async (e) => {
           </div>
 
               {/* floor selector */}
-              <div className="bg-white mt-6 w-[652px] rounded-lg shadow-xl">
+              <div className="bg-white mt-6 w-[652px] rounded-lg shadow-xl border-2 ">
            <div className="mb-6 ">
             <h3 className="mb-3 text-lg font-semibold text-gray-700 p-3 ml-[250px]">Select Floor</h3>
             {loading.floors ? (
@@ -3329,14 +3329,14 @@ const handleFormSubmit = async (e) => {
 
       {showLoanCalculator && (
   <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-60 ">
-    <div className="relative bg-white p-6 rounded-2xl shadow-lg max-w-7xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="relative bg-white p-6 rounded-2xl shadow-lg max-w-5xl w-full max-h-[90vh] overflow-y-auto">
       <button
         onClick={toggleLoanCalculator}
         className="absolute top-4 right-4 text-2xl font-bold text-gray-600 hover:text-black"
       >
         ×
       </button>
-      <h2 className="text-2xl font-bold mb-4">Loan Calculator</h2>
+      {/* <h2 className="text-2xl font-bold mb-4">Loan Calculator</h2> */}
       <div className="mb-5">
         <KeyAmenities />
       </div>
@@ -3359,7 +3359,7 @@ const handleFormSubmit = async (e) => {
 
       {/* ========== BOOKING FORM SECTION ========== */}
 
-<div className="flex justify-center w-[1350px] ml-5">
+<div className="flex justify-center w-[1350px]  pl-14  ">
   <div className="w-full  bg-white p-6">
     
     <div className="flex justify-between items-center mb-4 ">

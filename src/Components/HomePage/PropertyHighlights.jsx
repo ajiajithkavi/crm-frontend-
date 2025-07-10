@@ -958,7 +958,7 @@ const PropertyHighlights = ({
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImage((prev) => (prev + 1) % images.length);
-    }, 2000);
+    }, 3000);
     return () => clearInterval(interval);
   }, []);
 
@@ -992,12 +992,12 @@ const PropertyHighlights = ({
     useEffect(() => {
       const interval = setInterval(() => {
         setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
-      }, 3000);
+      }, 5000);
       return () => clearInterval(interval);
     }, []);
 
   return (
-    <div className="relative w-full h-[100dvh]">
+    <div className="relative w-full h-[90dvh]">
       <div className="absolute inset-0 z-0">
           {heroSlides.map((slide, index) => (
           <div
@@ -1102,7 +1102,7 @@ const PropertyHighlights = ({
       
 
       {/* Bottom Search Card */}
-<div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 w-[95%] sm:w-[700px] md:w-[1000px] bg-[#EDEAEA] rounded-lg p-4 sm:p-6">       
+<div className="absolute -bottom-10 left-1/2 transform -translate-x-1/2 w-[95%] sm:w-[700px] md:w-[1000px] bg-[#EDEAEA] rounded-3xl p-8 sm:p-6">       
   {/* Tabs */}
   <div className="absolute -top-12 -ml-9 left-1/2 transform -translate-x-1/2 bg-[#EDEAEA] rounded-lg mt-2 p-3">
     <span className="cursor-pointer px-8 py-2 bg-opacity-30 rounded-t-lg text-black">
@@ -1111,13 +1111,13 @@ const PropertyHighlights = ({
   </div>
 
   {/* Filters */}
-  <div className="flex flex-row justify-between items-center gap-2 pt-3 w-[950px] ml-3">
+  <div className="flex flex-row justify-between items-center gap-2 pt-3 w-[950px] ml-3 px-9">
     <div className="flex flex-col text-left ml-4 ">
       <label className="text-gray-700 text-2xl font-bold">
         State
       </label>
       <button
-        className="relative mt-4 bg-[#EDEAEA] rounded-lg w-full whitespace-nowrap text-left flex items-center justify-between"
+        className="relative mt-2 bg-[#EDEAEA] rounded-lg w-full whitespace-nowrap text-left flex items-center justify-between"
         onClick={() => setShowPopup(true)}
       >
         {selectedStateId ? (
@@ -1214,7 +1214,7 @@ const PropertyHighlights = ({
       <button
         onClick={handleSearch}
         disabled={!selectedDistrict || !priceRange}
-        className={`px-8 py-2 rounded-lg transition bg-black ${
+        className={`px-12 py-2 rounded-xl transition bg-black ${
           selectedDistrict && priceRange
             ? "bg-[#302F2F] text-white hover:bg-[#424141]"
             : "bg-[#EDEAEA] text-white cursor-not-allowed"

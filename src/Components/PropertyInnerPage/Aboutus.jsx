@@ -312,7 +312,7 @@ const PropertyDetails = () => {
       No buildings found for this property
     </div>
   );
-
+  
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 pb-8">
       {/* Navigation Bar with Dynamic Book Now Buttons */}
@@ -353,12 +353,16 @@ const PropertyDetails = () => {
 
       {/* Main Content - Add top margin to account for fixed navbar */}
       <div className="mt-20">
+       
         {buildings.map((building, index) => (
           <div 
             key={building._id} 
             className="mb-12 pb-8 border-b last:border-b-0"
             ref={el => buildingRefs.current[index] = el}
           >
+                    <h1 className="text-[60px] font-semibold pb-4 ">
+        {building.project.projectName || "Project Name"} {/* Add this line */}
+      </h1>
             {/* Property Images */}
             <div className="flex flex-col lg:flex-row gap-6 md:gap-10 lg:gap-14 items-center">
               <img
