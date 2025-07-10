@@ -183,6 +183,7 @@ const PropertyDetails = () => {
   const [error, setError] = useState(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
   const [navbarBookNowButtons, setNavbarBookNowButtons] = useState(new Set());
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const buildingRefs = useRef([]);
   const bookNowButtonRefs = useRef([]);
@@ -314,7 +315,7 @@ const PropertyDetails = () => {
   );
   
   return (
-    <div className="max-w-[1400px] -ml-20 -mr-56 px-4 md:px-6 pb-8 ">
+    <div className="max-w-[1400px] mx-auto px-4 md:px-6 pb-8">
       {/* Navigation Bar with Dynamic Book Now Buttons */}
       <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-300 shadow-sm z-50">
         <div className="container mx-auto px-4">
@@ -322,25 +323,42 @@ const PropertyDetails = () => {
             <div className="flex-shrink-0">
               <img src={logo} alt="Company Logo" className="h-10" />
             </div>
-            {/* Main Navigation Links - Center */}
-            <div className="flex-1 flex justify-center">
-              <nav className="flex space-x-8">
-                <a href="/about" className="text-gray-700 hover:text-red-500 font-medium">About Us</a>
-                <a href="/why-us" className="text-gray-700 hover:text-red-500 font-medium">Why Us</a>
-                <a href="/testimonials" className="text-gray-700 hover:text-red-500 font-medium">Testimonials</a>
-                <a href="/contact" className="text-gray-700 hover:text-red-500 font-medium">Contact Us</a>
+            
+            {/* Mobile menu button */}
+            <div className="md:hidden flex items-center">
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-gray-700 hover:text-red-500 focus:outline-none"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  {isMobileMenuOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
+              </button>
+            </div>
+            
+            {/* Main Navigation Links - Center - Hidden on mobile */}
+            <div className="hidden md:flex flex-1 justify-center">
+              <nav className="flex space-x-4 lg:space-x-8">
+                <a href="/about" className="text-gray-700 hover:text-red-500 font-medium text-sm lg:text-base">About Us</a>
+                <a href="/why-us" className="text-gray-700 hover:text-red-500 font-medium text-sm lg:text-base">Why Us</a>
+                <a href="/testimonials" className="text-gray-700 hover:text-red-500 font-medium text-sm lg:text-base">Testimonials</a>
+                <a href="/contact" className="text-gray-700 hover:text-red-500 font-medium text-sm lg:text-base">Contact Us</a>
               </nav>
             </div>
             
-            {/* Dynamic Book Now Buttons - Right */}
-            <div className="flex items-center space-x-3">
+            {/* Dynamic Book Now Buttons - Right - Hidden on mobile */}
+            <div className="hidden md:flex items-center space-x-2 lg:space-x-3">
               {Array.from(navbarBookNowButtons).map((buildingId) => {
                 const building = buildings.find(b => b._id === buildingId);
                 return (
                   <button
                     key={buildingId}
                     onClick={() => handleBookNow(buildingId)}
-                    className="bg-black text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm"
+                    className="bg-black text-white font-bold py-1 px-3 lg:py-2 lg:px-4 rounded-lg transition-colors text-xs lg:text-sm"
                   >
                     Book {building?.buildingName || 'Now'}
                   </button>
@@ -348,137 +366,158 @@ const PropertyDetails = () => {
               })}
             </div>
           </div>
+          
+          {/* Mobile menu */}
+          {isMobileMenuOpen && (
+            <div className="md:hidden bg-white py-4 border-t">
+              <nav className="flex flex-col space-y-3">
+                <a href="/about" className="text-gray-700 hover:text-red-500 font-medium">About Us</a>
+                <a href="/why-us" className="text-gray-700 hover:text-red-500 font-medium">Why Us</a>
+                <a href="/testimonials" className="text-gray-700 hover:text-red-500 font-medium">Testimonials</a>
+                <a href="/contact" className="text-gray-700 hover:text-red-500 font-medium">Contact Us</a>
+              </nav>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {Array.from(navbarBookNowButtons).map((buildingId) => {
+                  const building = buildings.find(b => b._id === buildingId);
+                  return (
+                    <button
+                      key={buildingId}
+                      onClick={() => handleBookNow(buildingId)}
+                      className="bg-black text-white font-bold py-1 px-3 rounded-lg transition-colors text-xs"
+                    >
+                      Book {building?.buildingName || 'Now'}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Main Content - Add top margin to account for fixed navbar */}
-      <div className="mt-20">
-       
+     <div className="mt-20 w-full px-4">
         {buildings.map((building, index) => (
           <div 
             key={building._id} 
-            className=" border-b last:border-b-0"
+            className="mb-16 md:mb-24 border-b last:border-b-0"
             ref={el => buildingRefs.current[index] = el}
           >
-                    <h1 className="text-[60px] font-semibold pb-4 ">
-        {building.project.projectName || "Project Name"} {/* Add this line */}
-      </h1>
+            <h1 className="text-3xl md:text-5xl lg:text-[60px] font-semibold pb-6">
+              {building.project?.projectName || "Project Name"}
+            </h1>
+            
             {/* Property Images */}
-            <div className="flex flex-col lg:flex-row gap-6 md:gap-10 lg:gap-14 items-center">
+            <div className="flex flex-col w-[1340px] lg:flex-row gap-4 md:gap-6 lg:gap-8 xl:gap-10 items-center">
               <img
                 src={building.photos?.[0] || img}
                 alt="Property"
-                className="w-full lg:w-1/2 h-[350px] md:h-[500px] rounded-lg shadow-lg object-cover"
+                className="w-full lg:w-1/2 h-[250px] sm:h-[300px] md:h-[350px] lg:h-[400px] xl:h-[500px] rounded-lg shadow-lg object-cover"
               />
-              <div className="flex flex-col gap-4 w-full lg:w-1/2">
+              <div className="flex flex-col gap-3 sm:gap-4 w-full lg:w-1/2">
                 <img
                   src={building.photos?.[1] || img2}
                   alt="Property"
-                  className="w-full h-[200px] md:h-[250px] rounded-lg shadow-md object-cover"
+                  className="w-full h-[120px] sm:h-[150px] md:h-[200px] lg:h-[220px] xl:h-[250px] rounded-lg shadow-md object-cover"
                 />
                 <img
                   src={building.photos?.[2] || img6}
                   alt="Property"
-                  className="w-full h-[200px] md:h-[250px] rounded-lg shadow-md object-cover"
+                  className="w-full h-[120px] sm:h-[150px] md:h-[200px] lg:h-[220px] xl:h-[250px] rounded-lg shadow-md object-cover"
                 />
               </div>
             </div>
 
             {/* Property Details */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-28 mt-12">
-  {/* Left Side - Property details */}
-  <div>
-    <div>
-      <h1 className="text-3xl font-bold text-black">
-        {building.buildingName || "Bouganville"}
-      </h1>
-      <div className="flex flex-col mt-3 space-y-2">
-        <p className="text-gray-600 flex items-center gap-2">
-          <img src={location1} alt="Location" className="w-5 h-5" />
-          {building.buildingArea || "OMR, Chennai"}
-        </p>
-        
-      </div>
-      <div className="mt-8">
-      <h2 className="text-xl font-semibold">About the property</h2>
-      <div className="relative">
-        <p className={`text-gray-600 mt-3 text-base leading-relaxed ${!expandedDescriptions[building._id] ? 'line-clamp-3' : ''}`}>
-          {building.description || "Nestled in a prime location, this property is the epitome of luxurious living. Designed for those who seek tranquility without compromising on modern conveniences, this property offers a harmonious blend of sophistication, comfort, and timeless elegance."}
-        </p>
-        {building.description && building.description.split('\n').length > 3 && (
-          <button
-            onClick={() => toggleDescription(building._id)}
-            className="text-black font-medium mt-2 hover:underline focus:outline-none"
-          >
-            {expandedDescriptions[building._id] ? 'Read Less' : 'Read More'}
-          </button>
-        )}
-      </div>
-    </div>
-    </div>
-     <div className="flex flex-wrap gap-8 mt-10 text-gray-700 text-sm border-b pb-4">
-        <p className="flex items-center flex-col gap-2">
-          <img src={sqft} alt="Sqft" className="w-5 h-5" />
-          Floors: {building.floorsCount || "3"}
-        </p>
-        <p className="flex items-center flex-col gap-2">
-          <img src={apartment} alt="Type" className="w-5 h-5" />
-          Type: {building.type || "Residential"}
-        </p>
-      </div>
-   
-  </div>
-
-  {/* Right Side - Payment and Amenities */}
-  <div className="">
-   
-    <p className="text-xl font-semibold text-black-500 px-4 py-4 text-center w-[540px] bg-[#F0F0F0] rounded-md shadow-lg">
-          <span className="text-4xl text-black-600">₹{formatPrice(building.priceRange)} </span>
-        </p>
-
-         {/* Amenities Section */}
-    <div className="mt-8">
-      <h3 className="text-lg font-semibold">Amenities</h3>
-      <div className="mt-2">
-        {building.amenities?.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {building.amenities.map((amenity, index) => (
-              <div key={index} className="flex items-center gap-3 text-gray-600">
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                  {getAmenityIcon(amenity)}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 lg:gap-16 xl:gap-20 mt-8 md:mt-12">
+              {/* Left Side - Property details */}
+              <div>
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold text-black">
+                    {building.buildingName || "Bouganville"}
+                  </h1>
+                  <div className="flex flex-col mt-2 md:mt-3 space-y-1 md:space-y-2">
+                    <p className="text-gray-600 flex items-center gap-1 md:gap-2 text-sm md:text-base">
+                      <img src={location1} alt="Location" className="w-4 h-4 md:w-5 md:h-5" />
+                      {building.buildingArea || "OMR, Chennai"}
+                    </p>
+                  </div>
+                  <div className="mt-4 md:mt-6 lg:mt-8">
+                    <h2 className="text-lg md:text-xl font-semibold">About the property</h2>
+                    <div className="relative">
+                      <p className={`text-gray-600 mt-2 md:mt-3 text-sm md:text-base leading-relaxed ${!expandedDescriptions[building._id] ? 'line-clamp-3' : ''}`}>
+                        {building.description || "Nestled in a prime location, this property is the epitome of luxurious living. Designed for those who seek tranquility without compromising on modern conveniences, this property offers a harmonious blend of sophistication, comfort, and timeless elegance."}
+                      </p>
+                      {building.description && building.description.split('\n').length > 3 && (
+                        <button
+                          onClick={() => toggleDescription(building._id)}
+                          className="text-black font-medium mt-1 md:mt-2 hover:underline focus:outline-none text-sm md:text-base"
+                        >
+                          {expandedDescriptions[building._id] ? 'Read Less' : 'Read More'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <span className="text-sm">{amenity}</span>
+                <div className="flex flex-wrap gap-4 md:gap-6 lg:gap-8 mt-6 md:mt-8 text-gray-700 text-xs md:text-sm border-b pb-4">
+                  <p className="flex items-center flex-col gap-1 md:gap-2">
+                    <img src={sqft} alt="Sqft" className="w-4 h-4 md:w-5 md:h-5" />
+                    Floors: {building.floorsCount || "3"}
+                  </p>
+                  <p className="flex items-center flex-col gap-1 md:gap-2">
+                    <img src={apartment} alt="Type" className="w-4 h-4 md:w-5 md:h-5" />
+                    Type: {building.type || "Residential"}
+                  </p>
+                </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-600">No amenities available</p>
-        )}
-      </div>
-    </div>
 
-         {/* Book Now Button */}
-    <div className="mt-[90px]">
-      <button
-        ref={el => bookNowButtonRefs.current[index] = el}
-        onClick={() => handleBookNow(building._id)}
-        className={`w-full bg-black text-white font-bold py-3 px-6 rounded-lg transition-colors ${
-          navbarBookNowButtons.has(building._id) ? 'opacity-50 pointer-events-none' : ''
-        }`}
-        style={{
-          visibility: navbarBookNowButtons.has(building._id) ? 'hidden' : 'visible'
-        }}
-      >
-        Book Now
-      </button>
-    </div>
+              {/* Right Side - Payment and Amenities */}
+              <div>
+                <p className="text-lg md:text-xl font-semibold text-black-500 px-3 py-3 md:px-4 md:py-4 text-center w-full md:w-[400px] lg:w-[500px] xl:w-[540px] bg-[#F0F0F0] rounded-md shadow-lg">
+                  <span className="text-2xl md:text-3xl lg:text-4xl text-black-600">₹{formatPrice(building.priceRange)}</span>
+                </p>
 
-   
-  </div>
-</div>
+                {/* Amenities Section */}
+                <div className="mt-6 md:mt-8">
+                  <h3 className="text-base md:text-lg font-semibold">Amenities</h3>
+                  <div className="mt-1 md:mt-2">
+                    {building.amenities?.length > 0 ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
+                        {building.amenities.map((amenity, index) => (
+                          <div key={index} className="flex items-center gap-2 md:gap-3 text-gray-600 text-xs md:text-sm">
+                            <div className="w-6 h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                              {getAmenityIcon(amenity)}
+                            </div>
+                            <span>{amenity}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-gray-600 text-sm md:text-base">No amenities available</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Book Now Button */}
+                <div className="mt-8 md:mt-12 lg:mt-[90px]">
+                  <button
+                    ref={el => bookNowButtonRefs.current[index] = el}
+                    onClick={() => handleBookNow(building._id)}
+                    className={`w-full bg-black text-white font-bold py-2 md:py-3 px-4 md:px-6 rounded-lg transition-colors ${
+                      navbarBookNowButtons.has(building._id) ? 'opacity-50 pointer-events-none' : ''
+                    }`}
+                    style={{
+                      visibility: navbarBookNowButtons.has(building._id) ? 'hidden' : 'visible'
+                    }}
+                  >
+                    Book Now
+                  </button>
+                </div>
+              </div>
+            </div>
 
             {/* Map Section */}
-            <div className="mt-12 h-[400px]" ref={el => mapRefs.current[index] = el}>
+            <div className="mt-8 md:mt-12 h-[300px] md:h-[350px] lg:h-[400px]" ref={el => mapRefs.current[index] = el}>
               <Map building={building} />
             </div>
           </div>
