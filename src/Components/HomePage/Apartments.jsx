@@ -434,8 +434,10 @@ const Apartments = ({ selectedStateId, searchData, setSelectedStateId, setSearch
           PROPERTY PORTFOLIO
         </div> */}
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-          Explore Properties That Suit Your Lifestyle
+          Explore Properties That Suit 
+          
         </h2>
+        <span className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Your Lifestyle</span>
         <div className="flex flex-wrap justify-center gap-3 mt-6">
           {categories.map((cat) => (
             <button

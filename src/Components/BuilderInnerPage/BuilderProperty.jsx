@@ -215,6 +215,9 @@ export default function PropertyCards() {
   const { propertyId } = location.state;
   const selectedBuilder = location.state?.builderName;
   const builderId = location.state?.builderId;
+    const { pathname } = useLocation();
+
+  
 
   const BASE_URL = "https://crm-bcgg.onrender.com";
   const token = JSON.parse(sessionStorage.getItem("logindata"))?.token;
@@ -224,6 +227,10 @@ export default function PropertyCards() {
     "Under Construction": "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
     "Completed": "bg-blue-500/20 text-blue-400 border-blue-500/30"
   };
+
+    useEffect(() => {
+    window.scrollTo(0, 0); // Scrolls to top when this page loads
+  }, [pathname]);
 
   useEffect(() => {
     const fetchProperties = async () => {
@@ -271,6 +278,8 @@ export default function PropertyCards() {
 
     fetchProperties();
   }, [builderId, token]);
+
+  
 
   const filteredProperties = properties.filter((property) => {
     const typeMatch = selectedType === "All" || property.type === selectedType;
