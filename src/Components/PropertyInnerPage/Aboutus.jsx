@@ -357,7 +357,7 @@ const PropertyDetails = () => {
         {buildings.map((building, index) => (
           <div 
             key={building._id} 
-            className="-mt-8 border-b last:border-b-0"
+            className=" border-b last:border-b-0"
             ref={el => buildingRefs.current[index] = el}
           >
                     <h1 className="text-[60px] font-semibold pb-4 ">
