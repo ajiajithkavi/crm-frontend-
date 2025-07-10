@@ -2969,7 +2969,7 @@ const handleFormSubmit = async (e) => {
     and you will feel like a dream coming true.`;
 
   return (
-    <div className="mx-auto bg-white ">
+    <div className="mx-auto -ml-10 bg-white ">
         {validationMessages.length > 0 && (
   <div className="fixed top-4 right-4 space-y-2 z-50" aria-live="polite">
     {validationMessages.map((message, index) => (
@@ -3008,7 +3008,7 @@ const handleFormSubmit = async (e) => {
         </div>
 
         <div
-          className="flex relative flex-col p-6 bg-white"
+          className="flex relative flex-col p-6 bg-white -mr-32"
           style={{
             width: "800px",
             height: "500px",
@@ -3156,7 +3156,7 @@ const handleFormSubmit = async (e) => {
         </div>
             
         <div
-          className="w-[800px] border  bg-[#F1F1F1] rounded-2xl shadow-xl h-[550px]"
+          className="w-[800px] border  bg-[#F1F1F1] rounded-2xl shadow-xl h-[550px] -mr-10"
          
         >
           <div className=" p-6 w-full h-full">
@@ -3359,7 +3359,7 @@ const handleFormSubmit = async (e) => {
 
       {/* ========== BOOKING FORM SECTION ========== */}
 
-<div className="flex justify-center w-[1350px]  pl-14  ">
+<div className="flex justify-center w-[1450px]  pl-14  ">
   <div className="w-full  bg-white p-6">
     
     <div className="flex justify-between items-center mb-4 ">

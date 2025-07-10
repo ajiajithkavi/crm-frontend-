@@ -314,7 +314,7 @@ const PropertyDetails = () => {
   );
   
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-6 pb-8">
+    <div className="max-w-[1400px] -ml-20 -mr-56 px-4 md:px-6 pb-8 ">
       {/* Navigation Bar with Dynamic Book Now Buttons */}
       <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-300 shadow-sm z-50">
         <div className="container mx-auto px-4">
@@ -357,7 +357,7 @@ const PropertyDetails = () => {
         {buildings.map((building, index) => (
           <div 
             key={building._id} 
-            className="mb-12 pb-8 border-b last:border-b-0"
+            className="-mt-8 border-b last:border-b-0"
             ref={el => buildingRefs.current[index] = el}
           >
                     <h1 className="text-[60px] font-semibold pb-4 ">

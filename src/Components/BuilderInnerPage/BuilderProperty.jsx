@@ -314,7 +314,7 @@ export default function PropertyCards() {
           {/* <div className="text-orange-500 text-sm font-light tracking-widest mb-4">
             PROPERTY PORTFOLIO
           </div> */}
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 mt-9">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 mt-9">
             {selectedBuilder ? `${selectedBuilder} Properties` : "Explore Our Properties"}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
