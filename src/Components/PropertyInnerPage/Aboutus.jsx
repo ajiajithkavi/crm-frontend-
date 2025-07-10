@@ -245,7 +245,7 @@ const PropertyDetails = () => {
   };
 
   const getAmenityIcon = (amenity) => {
-    const iconStyle = { color: '#ed8936', size: 16 };
+    const iconStyle = { color: 'black', size: 16 };
     const iconMap = {
       'air conditioner': <FaSnowflake style={iconStyle} />,
       'fire extinguisher': <FaFireExtinguisher style={iconStyle} />,
@@ -316,7 +316,7 @@ const PropertyDetails = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 md:px-6 pb-8">
       {/* Navigation Bar with Dynamic Book Now Buttons */}
-      <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 shadow-sm z-50">
+      <div className="fixed top-0 left-0 right-0 bg-white border-b border-gray-300 shadow-sm z-50">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <div className="flex-shrink-0">
@@ -340,7 +340,7 @@ const PropertyDetails = () => {
                   <button
                     key={buildingId}
                     onClick={() => handleBookNow(buildingId)}
-                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm"
+                    className="bg-black text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm"
                   >
                     Book {building?.buildingName || 'Now'}
                   </button>
@@ -381,86 +381,100 @@ const PropertyDetails = () => {
             </div>
 
             {/* Property Details */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-28 mt-12">
-              <div className="-mt-6">
-                <h2 className="mt-8 text-xl font-semibold">About the property</h2>
-                <div className="relative">
-                  <p className={`text-gray-600 mt-3 text-base leading-relaxed ${!expandedDescriptions[building._id] ? 'line-clamp-3' : ''}`}>
-                    {building.description || "Nestled in a prime location, this property is the epitome of luxurious living. Designed for those who seek tranquility without compromising on modern conveniences, this property offers a harmonious blend of sophistication, comfort, and timeless elegance."}
-                  </p>
-                  {building.description && building.description.split('\n').length > 3 && (
-                    <button
-                      onClick={() => toggleDescription(building._id)}
-                      className="text-red-500 font-medium mt-2 hover:underline focus:outline-none"
-                    >
-                      {expandedDescriptions[building._id] ? 'Read Less' : 'Read More'}
-                    </button>
-                  )}
-                </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-28 mt-12">
+  {/* Left Side - Property details */}
+  <div>
+    <div>
+      <h1 className="text-3xl font-bold text-black">
+        {building.buildingName || "Bouganville"}
+      </h1>
+      <div className="flex flex-col mt-3 space-y-2">
+        <p className="text-gray-600 flex items-center gap-2">
+          <img src={location1} alt="Location" className="w-5 h-5" />
+          {building.buildingArea || "OMR, Chennai"}
+        </p>
+        
+      </div>
+      <div className="mt-8">
+      <h2 className="text-xl font-semibold">About the property</h2>
+      <div className="relative">
+        <p className={`text-gray-600 mt-3 text-base leading-relaxed ${!expandedDescriptions[building._id] ? 'line-clamp-3' : ''}`}>
+          {building.description || "Nestled in a prime location, this property is the epitome of luxurious living. Designed for those who seek tranquility without compromising on modern conveniences, this property offers a harmonious blend of sophistication, comfort, and timeless elegance."}
+        </p>
+        {building.description && building.description.split('\n').length > 3 && (
+          <button
+            onClick={() => toggleDescription(building._id)}
+            className="text-black font-medium mt-2 hover:underline focus:outline-none"
+          >
+            {expandedDescriptions[building._id] ? 'Read Less' : 'Read More'}
+          </button>
+        )}
+      </div>
+    </div>
+    </div>
+     <div className="flex flex-wrap gap-8 mt-10 text-gray-700 text-sm border-b pb-4">
+        <p className="flex items-center flex-col gap-2">
+          <img src={sqft} alt="Sqft" className="w-5 h-5" />
+          Floors: {building.floorsCount || "3"}
+        </p>
+        <p className="flex items-center flex-col gap-2">
+          <img src={apartment} alt="Type" className="w-5 h-5" />
+          Type: {building.type || "Residential"}
+        </p>
+      </div>
+   
+  </div>
 
-                <h3 className="mt-8 text-lg font-semibold">Amenities</h3>
-                <div className="mt-2">
-                  {building.amenities?.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {building.amenities.map((amenity, index) => (
-                        <div key={index} className="flex items-center gap-3 text-gray-600">
-                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                            {getAmenityIcon(amenity)}
-                          </div>
-                          <span className="text-sm">{amenity}</span>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-gray-600">No amenities available</p>
-                  )}
+  {/* Right Side - Payment and Amenities */}
+  <div className="">
+   
+    <p className="text-xl font-semibold text-black-500 px-4 py-4 text-center w-[540px] bg-[#F0F0F0] rounded-md shadow-lg">
+          <span className="text-4xl text-black-600">₹{formatPrice(building.priceRange)} </span>
+        </p>
+
+         {/* Amenities Section */}
+    <div className="mt-8">
+      <h3 className="text-lg font-semibold">Amenities</h3>
+      <div className="mt-2">
+        {building.amenities?.length > 0 ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {building.amenities.map((amenity, index) => (
+              <div key={index} className="flex items-center gap-3 text-gray-600">
+                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+                  {getAmenityIcon(amenity)}
                 </div>
+                <span className="text-sm">{amenity}</span>
               </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-gray-600">No amenities available</p>
+        )}
+      </div>
+    </div>
 
-              <div>
-                <h1 className="text-3xl font-bold text-red-600">
-                  {building.buildingName || "Bouganville"}
-                </h1>
-                <div className="flex flex-col mt-3 space-y-2">
-                  <p className="text-gray-600 flex items-center gap-2">
-                    <img src={location1} alt="Location" className="w-5 h-5" />
-                    {building.buildingArea || "OMR, Chennai"}
-                  </p>
-                  <p className="text-xl font-semibold text-red-500">
-                    ₹{formatPrice(building.priceRange)} <span className="text-sm font-normal text-gray-600">night</span>
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-6 mt-6 text-gray-700 text-sm border-b pb-4">
-                  <p className="flex items-center gap-2">
-                    <img src={sqft} alt="Sqft" className="w-5 h-5" />
-                    Floors: {building.floorsCount || "3"}
-                  </p>
-                  <p className="flex items-center gap-2">
-                    <img src={apartment} alt="Type" className="w-5 h-5" />
-                    Type: {building.type || "Residential"}
-                  </p>
-                </div>
+         {/* Book Now Button */}
+    <div className="mt-[90px]">
+      <button
+        ref={el => bookNowButtonRefs.current[index] = el}
+        onClick={() => handleBookNow(building._id)}
+        className={`w-full bg-black text-white font-bold py-3 px-6 rounded-lg transition-colors ${
+          navbarBookNowButtons.has(building._id) ? 'opacity-50 pointer-events-none' : ''
+        }`}
+        style={{
+          visibility: navbarBookNowButtons.has(building._id) ? 'hidden' : 'visible'
+        }}
+      >
+        Book Now
+      </button>
+    </div>
 
-                {/* Original Book Now Button */}
-                <div className="mt-6">
-                  <button
-                    ref={el => bookNowButtonRefs.current[index] = el}
-                    onClick={() => handleBookNow(building._id)}
-                    className={`w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg transition-colors ${
-                      navbarBookNowButtons.has(building._id) ? 'opacity-50 pointer-events-none' : ''
-                    }`}
-                    style={{
-                      visibility: navbarBookNowButtons.has(building._id) ? 'hidden' : 'visible'
-                    }}
-                  >
-                    Book Now
-                  </button>
-                </div>
-              </div>
-            </div>
+   
+  </div>
+</div>
 
             {/* Map Section */}
-            <div className="mt-12" ref={el => mapRefs.current[index] = el}>
+            <div className="mt-12 h-[400px]" ref={el => mapRefs.current[index] = el}>
               <Map building={building} />
             </div>
           </div>

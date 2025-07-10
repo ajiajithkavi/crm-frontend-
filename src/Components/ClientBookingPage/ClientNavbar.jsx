@@ -15,7 +15,7 @@ export default function PropertyNavbar() {
   ];
 
   return (
-    <nav className="p-4">
+    <nav className="p-4 border-b border-slate-300 bg-white">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Logo */}
         <div className="text-xl font-bold flex items-center">
@@ -30,7 +30,7 @@ export default function PropertyNavbar() {
               whileHover={{ scale: 1.1, color: "#EA580C" }}
               transition={{ duration: 0.3 }}
             >
-              <Link to={item.path} className="hover:text-orange-500">
+              <Link to={item.path} className="hover:text-black">
                 {item.name}
               </Link>
             </motion.li>

@@ -1847,6 +1847,7 @@ import Page from "./Page";
 import { useLocation, useNavigate } from "react-router-dom";
 import KeyAmenities from "../PropertyInnerPage/KeyAmenities";
 import { IoMdBookmark } from "react-icons/io";
+import { color } from "framer-motion";
 
 const BASE_URL = "https://crm-bcgg.onrender.com";
 
@@ -1890,6 +1891,12 @@ function ArihantPage() {
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
   const [bookmarkActionLoading, setBookmarkActionLoading] = useState(false);
+
+  // Loan calculator state
+  const [showLoanCalculator, setShowLoanCalculator] = useState(false);
+  const toggleLoanCalculator = () => {
+  setShowLoanCalculator(!showLoanCalculator);
+};
 
   // Authentication and bookmark states
   const [token, setToken] = useState("");
@@ -2672,24 +2679,100 @@ const handleBookNow = async () => {
   }
 };
 
+
+
+//   const customSelectStyles = {
+//   control: (provided, state) => ({
+//     ...provided,
+//     borderColor: state.isFocused ? 'white' : 'rgba(255,255,255,0.2)',
+//     backgroundColor: 'black',
+//     color: 'white',
+//     '&:hover': {
+//       borderColor: 'white',
+//     },
+//     boxShadow: state.isFocused ? '0 0 0 1px white' : 'none',
+//     minHeight: '40px',
+//     borderRadius: '6px',
+//   }),
+//   option: (provided, state) => ({
+//     ...provided,
+//     backgroundColor: state.isSelected 
+//       ? 'white' 
+//       : state.isFocused 
+//         ? '#333' // Darker hover
+//         : 'black',
+//     color: state.isSelected ? 'black' : 'white',
+//     '&:active': {
+//       backgroundColor: '#555',
+//     },
+//     cursor: 'pointer',
+//   }),
+//   menu: (provided) => ({
+//     ...provided,
+//     backgroundColor: 'black',
+//     border: '1px solid rgba(255,255,255,0.2)',
+//     marginTop: '4px',
+//     boxShadow: '0 4px 6px -1px rgba(0,0,0,0.5)',
+//   }),
+//   menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+//   singleValue: (provided) => ({
+//     ...provided,
+//     color: 'white',
+//   }),
+//   placeholder: (provided) => ({
+//     ...provided,
+//     color: 'rgba(255,255,255,0.6)',
+//   }),
+//   indicatorSeparator: () => ({
+//     display: 'none',
+//   }),
+//   dropdownIndicator: (provided) => ({
+//     ...provided,
+//     color: 'rgba(255,255,255,0.6)',
+//     '&:hover': {
+//       color: 'white',
+//     },
+//   }),
+//   input: (provided) => ({
+//     ...provided,
+//     color: 'white',
+//   }),
+//   multiValue: (provided) => ({
+//     ...provided,
+//     backgroundColor: 'rgba(255,255,255,0.1)',
+//   }),
+//   multiValueLabel: (provided) => ({
+//     ...provided,
+//     color: 'white',
+//   }),
+//   multiValueRemove: (provided) => ({
+//     ...provided,
+//     color: 'white',
+//     '&:hover': {
+//       backgroundColor: 'rgba(255,255,255,0.2)',
+//     },
+//   }),
+// };
   /* ========== HELPER FUNCTIONS ========== */
   const customSelectStyles = {
     control: (provided) => ({
       ...provided,
-      borderColor: "#D1D5DB",
+      borderColor: "black",
+      backgroundColor:"white",
+      color: "black",
       "&:hover": {
-        borderColor: "#F59E0B",
+        borderColor: "black",
       },
       boxShadow: "none",
       minHeight: "40px",
     }),
     option: (provided, state) => ({
       ...provided,
-      backgroundColor: state.isSelected ? "#F59E0B" : "white",
+      backgroundColor: state.isSelected ? "black" : "white",
       color: state.isSelected ? "white" : "#4B5563",
       "&:hover": {
-        backgroundColor: "#FBBF24",
-        color: "white",
+        backgroundColor: "white",
+        color: "black",
       },
     }),
     menuPortal: (base) => ({ ...base, zIndex: 9999 }),
@@ -2905,16 +2988,17 @@ const handleFormSubmit = async (e) => {
   </div>
 )}
       {/* Top Section */}
+      <div className="text-[60px] font-semibold ml-[20px]">About {buildingData?.buildingName || "Loading..."}</div>
       <div className="flex flex-col gap-6 items-start p-4 mx-auto bg-white lg:flex-row">
         <div
-          className="overflow-hidden relative"
+          className="overflow-hidden relative mr-2 mt-4"
           style={{ width: "800px", height: "500px" }}
         >
           {buildingImage ? (
             <img
               src={buildingImage}
               alt={buildingData?.buildingName || "Building"}
-              className="object-cover w-full h-full"
+              className="object-cover w-full h-full rounded-3xl"
             />
           ) : (
             <div className="flex justify-center items-center w-full h-full bg-gray-200">
@@ -2932,15 +3016,15 @@ const handleFormSubmit = async (e) => {
           }}
         >
           <div className="flex items-center mb-4">
-            <span className="mr-2 text-sm font-semibold tracking-wide text-yellow-600 uppercase">
+            {/* <span className="mr-2 text-sm font-semibold tracking-wide text-black uppercase">
               About
             </span>
-            <div className="flex-1 h-px bg-yellow-600" />
+            <div className="flex-1 h-px bg-black" /> */}
           </div>
-          <h2 className="mb-4 text-2xl font-bold leading-snug text-gray-800">
-            {buildingData?.buildingName || "Loading..."} - Price, Floor Plans,
+          {/* <h2 className="mb-4 text-2xl font-bold leading-snug text-gray-800 -mt-7 ">
+            Price, Floor Plans,
             Reviews
-          </h2>
+          </h2> */}
 
           <div className="text-sm leading-relaxed text-gray-700">
             {textPart1
@@ -2966,19 +3050,20 @@ const handleFormSubmit = async (e) => {
           </div>
           <button
             onClick={handleToggle}
-            className="mt-4 text-[#C8A158] font-medium hover:underline self-start"
+            className="mt-4 text-white font-medium hover:underline self-start"
           >
             {isExpanded ? "Read Less" : "Read More"}
           </button>
         </div>
       </div>
 
-      <div className="flex flex-col gap-6 justify-center px-4 mx-auto my-10 max-w-6xl md:flex-row">
-        <div className="p-6 bg-orange-50 rounded-lg shadow-md md:w-2/3">
+      <div className="flex flex-col gap-6 justify-center px-4 mx-auto my-10 max-w-9xl md:flex-row ml-0">
+        <div className="p-6 bg-white rounded-lg  w-[700px] ml-0 mr-auto gap-6">
+          <div className="bg-white rounded-lg p-6 shadow-xl">
           <h2 className="mb-6 text-2xl font-bold text-center text-gray-800">
             Select Available Spaces
           </h2>
-
+            {/* building selecter */}
           <div className="mb-4 w-full">
             <Select
               options={buildings.map((building) => ({
@@ -3002,39 +3087,42 @@ const handleFormSubmit = async (e) => {
               menuPortalTarget={document.body}
             />
           </div>
+          </div>
 
-           <div className="mb-6">
-      <h3 className="mb-3 text-lg font-semibold text-gray-700">Select Floor</h3>
-      {loading.floors ? (
-        <div className="flex justify-center items-center h-16">
-          Loading floors...
-        </div>
-      ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-12">
-          {floors.length > 0 ? (
+              {/* floor selector */}
+              <div className="bg-white mt-6 w-[652px] rounded-lg shadow-xl">
+           <div className="mb-6 ">
+            <h3 className="mb-3 text-lg font-semibold text-gray-700 p-3 ml-[250px]">Select Floor</h3>
+            {loading.floors ? (
+              <div className="flex justify-center items-center h-16">
+                Loading floors...
+              </div>
+            ) : (
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 ml-[35px]">
+            {floors.length > 0 ? (
             floors.map((floor) => (
               <div
                 key={floor._id}
                 onClick={() => handleFloorChange({ value: floor._id, label: `Floor ${floor.floorNumber}` })}
                 className={`p-1 border rounded-lg cursor-pointer text-center transition-all ${
                   selectedFloor?._id === floor._id
-                    ? 'border-orange-500 bg-orange-100 font-medium'
-                    : 'border-gray-300 hover:border-orange-300 hover:bg-orange-50'
+                    ? 'border-black bg-white text-black font-medium hover:bg-black hover:text-white'
+                    : 'border-black bg-black text-white hover:border-black hover:bg-white hover:text-black'
                 }`}
               >
                 Floor {floor.floorNumber}
               </div>
             ))
-          ) : (
+            ) : (
             <div className="col-span-full text-center text-gray-500 py-4">
               {selectedBuilding ? "No floors available for this building" : "Please select a building first"}
             </div>
-          )}
-        </div>
-      )}
-    </div>
+            )}
+                </div>
+              )}
+            </div>
 
-          <div className="relative">
+          <div className="relative w-[600px] p-3 ml-6">
             {selectedFloor ? (
               loading.units ? (
                 <div className="flex justify-center items-center h-64">
@@ -3064,17 +3152,18 @@ const handleFormSubmit = async (e) => {
               </div>
             )}
           </div>
+          </div>
         </div>
-
+            
         <div
-          className="md:w-1/3 border border-orange-100 bg-[#FFF8ED] rounded-lg shadow-sm"
-          style={{ height: "500px" }}
+          className="w-[800px] border  bg-[#F1F1F1] rounded-2xl shadow-xl h-[550px]"
+         
         >
-          <div className="overflow-y-auto p-6 w-full h-full">
+          <div className=" p-6 w-full h-full">
             {selectedUnit ? (
               <>
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-2xl font-bold text-orange-600">
+                  <h3 className="text-2xl font-bold text-black-600">
                     {selectedUnit.unitNumber}
                   </h3>
                   <button
@@ -3083,7 +3172,7 @@ const handleFormSubmit = async (e) => {
                     aria-label="Toggle bookmark"
                   >
                     {isBookmarked ? (
-                      <IoMdBookmark className="text-2xl text-yellow-600" />
+                      <IoMdBookmark className="text-2xl text-black" />
                     ) : (
                       <svg
                         stroke="currentColor"
@@ -3104,8 +3193,8 @@ const handleFormSubmit = async (e) => {
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center">
-                    <FaMapMarkerAlt className="mr-2 text-yellow-600" />
-                    <span>Location: {selectedUnit?.facing || "N/A"}</span>
+                    <FaMapMarkerAlt className="mr-2 text-yellow-600 " />
+                    <span className="font-s">Location: {selectedUnit?.facing || "N/A"}</span>
                   </div>
                   <div className="flex items-center">
                     <FaMoneyBillWave className="mr-2 text-yellow-600" />
@@ -3127,7 +3216,7 @@ const handleFormSubmit = async (e) => {
                     <img
                       src={selectedUnit.photos[0].url}
                       alt={`Unit ${selectedUnit.unitNumber}`}
-                      className="mt-4 w-full h-auto object-cover max-h-40 border-2 border-[#C8A158] cursor-pointer"
+                      className="mt-4 w-full h-full object-cover max-h-60 border-2  cursor-pointer"
                       onClick={() => openModal(selectedUnit.photos[0].url)}
                     />
                   )}
@@ -3138,43 +3227,47 @@ const handleFormSubmit = async (e) => {
                   disabled={paymentProcessing}
                   className={`mt-6 px-6 py-2 ${
                     paymentProcessing ? "bg-gray-400" : "bg-[#FAE696]"
-                  } text-black font-semibold rounded hover:bg-[#C8A158]/90 uppercase w-full`}
+                  } text-white bg-black font-semibold rounded hover:bg-[white] hover:text-black uppercase w-full`}
                 >
                   {paymentProcessing ? "Processing..." : "Book Now"}
                 </button>
               </>
             ) : (
               <>
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-2xl font-bold text-orange-600">
+                <div className="flex justify-between items-center mb-4 ">
+                  <h3 className="text-2xl font-bold text-black-600">
                     {selectedBuilding?.buildingName || "Select a Building"}
                   </h3>
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center">
                     <FaMapMarkerAlt className="mr-2 text-yellow-600" />
-                    <span>
-                      Location: {selectedBuilding?.buildingArea || "N/A"}
+                    <span className="font-bold text-[20px]">
+                      Location: 
                     </span>
                   </div>
+                  <div className="ml-6">{selectedBuilding?.buildingArea || "N/A"}</div>
                   <div className="flex items-center">
                     <FaMoneyBillWave className="mr-2 text-yellow-600" />
-                    <span>
-                      Price Range: {selectedBuilding?.priceRange || "N/A"}
+                    <span className="font-bold text-[20px]">
+                      Price Range:
                     </span>
                   </div>
+                  <div className="ml-6"> {selectedBuilding?.priceRange || "N/A"}</div>
                   <div className="flex items-center">
                     <FaRulerCombined className="mr-2 text-yellow-600" />
-                    <span>
-                      Total Units: {selectedBuilding?.totalUnits || "N/A"}
+                    <span className="font-bold text-[20px]">
+                      Total Units:
                     </span>
                   </div>
+                  <div className="ml-6"> {selectedBuilding?.totalUnits || "N/A"}</div>
                   <div className="flex items-center">
                     <FaBuilding className="mr-2 text-yellow-600" />
-                    <span>Type: {selectedBuilding?.type || "N/A"}</span>
+                    <span className="font-bold text-[20px]">Type: </span>
                   </div>
+                  <div className="ml-6">{selectedBuilding?.type || "N/A"}</div>
                 </div>
-                <p className="mt-4 text-gray-700">
+                <p className="mt-10 text-gray-700">
                   {selectedFloor
                     ? "Click on an available unit in the floor plan to view details and book."
                     : selectedBuilding
@@ -3184,6 +3277,9 @@ const handleFormSubmit = async (e) => {
               </>
             )}
           </div>
+              {/* <h2 className="font-inter font-semibold not-italic text-[20px] leading-none tracking-normal mt-6 pt-6">
+                Click on an available unit in the floor plan to <br />view details and book.
+              </h2>         */}
         </div>
       </div>
 
@@ -3230,17 +3326,55 @@ const handleFormSubmit = async (e) => {
           </div>
         </div>
       )}
-      <div className="mb-5"><KeyAmenities /></div>
+
+      {showLoanCalculator && (
+  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-60 ">
+    <div className="relative bg-white p-6 rounded-2xl shadow-lg max-w-7xl w-full max-h-[90vh] overflow-y-auto">
+      <button
+        onClick={toggleLoanCalculator}
+        className="absolute top-4 right-4 text-2xl font-bold text-gray-600 hover:text-black"
+      >
+        ×
+      </button>
+      <h2 className="text-2xl font-bold mb-4">Loan Calculator</h2>
+      <div className="mb-5">
+        <KeyAmenities />
+      </div>
+      <div className="mt-4">
+        {/* Add your loan calculator form here if needed */}
+        <button
+          onClick={toggleLoanCalculator}
+          className="bg-black rounded-2xl text-white font-bold px-6 py-3 w-full"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+      {/* <div className="mb-5"><KeyAmenities /></div> */}
 
       
 
       {/* ========== BOOKING FORM SECTION ========== */}
 
-<div className="flex justify-center w-full">
-  <div className="w-full md:w-1/2 bg-white p-6">
-    <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">
-      Booking Details
-    </h2>
+<div className="flex justify-center w-[1350px] ml-5">
+  <div className="w-full  bg-white p-6">
+    
+    <div className="flex justify-between items-center mb-4 ">
+  <h2 className="text-2xl sm:text-3xl font-medium text-gray-800 ml-5">
+    Booking Details
+  </h2>
+  <div className="p-2">
+  <button 
+    onClick={toggleLoanCalculator} 
+    className="bg-black rounded-2xl text-white font-bold w-[370px] h-[70px]"
+  >
+    Loan Calculator
+  </button>
+  </div>
+</div>
     <form className="space-y-4" onSubmit={handleFormSubmit}>
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="w-full">
@@ -3388,7 +3522,7 @@ const handleFormSubmit = async (e) => {
       <button
         type="submit"
         disabled={formSubmitting}
-        className={`bg-orange-500 text-white px-6 py-2 rounded-md hover:bg-orange-600 transition font-semibold ${
+        className={`bg-black text-white px-6 py-2 rounded-md hover:bg-orange-600 transition font-medium ${
           formSubmitting ? 'opacity-50 cursor-not-allowed' : ''
         }`}
       >

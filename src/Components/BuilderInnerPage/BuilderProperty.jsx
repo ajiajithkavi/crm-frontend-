@@ -305,25 +305,26 @@ export default function PropertyCards() {
           {/* <div className="text-orange-500 text-sm font-light tracking-widest mb-4">
             PROPERTY PORTFOLIO
           </div> */}
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 mt-9">
             {selectedBuilder ? `${selectedBuilder} Properties` : "Explore Our Properties"}
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             Discover properties that blend luxury, comfort, and modern living tailored to your lifestyle.
           </p>
           <div className="flex flex-wrap justify-center gap-3 mt-6">
-            {["All", "Apartments", "Villas", "Plots", "Land"].map((type) => (
-              <motion.button
-                key={type}
-                onClick={() => setSelectedType(type)}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                className={`px-4 py-2 rounded-full border text-sm md:text-base transition-all duration-300 ${
-                  selectedType === type
-                    ? "border-orange-500 text-orange-500 bg-orange-100 shadow-md"
-                    : "border-gray-500 text-gray-500 bg-transparent"
-                }`}
-              >
+            {["All", "Apartments", "Villas", "Plots","Land"].map((type) => (
+             <motion.button
+  key={type}
+  onClick={() => setSelectedType(type)}
+  whileHover={{ scale: 1.1 }}
+  whileTap={{ scale: 0.95 }}
+  className={`px-4 py-2 rounded border text-sm md:text-base transition-all duration-300 
+    ${
+      selectedType === type
+        ? "border-black text-white bg-black shadow-md"
+        : "border-black text-black bg-white hover:bg-black hover:text-white hover:border-black"
+    }`}
+>
                 {type}
               </motion.button>
             ))}
@@ -336,31 +337,32 @@ export default function PropertyCards() {
           </div>
         ) : (
           <motion.div
-            className="grid grid-cols-1 lg:grid-cols-3 gap-8"
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ amount: 0.5 }}
-          >
-            {filteredProperties.map((property, index) => (
-              <motion.div
-                key={property.id}
-                className="group overflow-hidden border-0 shadow-xl transition-all duration-500 hover:shadow-2xl bg-white"
-                 initial={{ opacity: 0, x: index % 2 === 0 ? -100 : 100 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0 }}
-        whileHover={{
-          scale: 1.05,
-          boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.2)",
-        }}
-              >
-                <div className="relative h-64 overflow-hidden">
+  className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+  // initial={{ opacity: 0, y: 50 }}
+  // whileInView={{ opacity: 1, y: 0 }}
+  // transition={{ duration: 0.5 }}
+  // viewport={{ once: true, amount: 0.2 }} // Changed amount and added once
+>
+  {filteredProperties.map((property) => (
+    <motion.div
+      key={property.id}
+      className="group overflow-hidden border-0 shadow-xl transition-all duration-300 hover:shadow-2xl rounded-2xl bg-white"
+      // initial={{ opacity: 0, y: 20 }}
+      // whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay: 0.1 }}
+      whileHover={{
+        scale: 1.05,
+        boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.2)",
+      }}
+    >
+                <div className="relative h-64 overflow-hidden p-4 ">
                   <img
                     src={property.images[0]}
                     alt={property.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="w-[500px] h-full object-cover transition-transform duration-700  rounded-2xl"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-white-900/60 to-transparent"></div>
                   {/* <div className="absolute top-4 left-4">
                     <span className={`${statusColors[property.status] || statusColors["New Launch"]} border px-2 py-1 rounded text-xs font-semibold`}>
                       {property.status}
@@ -372,9 +374,9 @@ export default function PropertyCards() {
                     </span>
                   </div> */}
                   <div className="absolute bottom-4 left-4">
-                    <div className="text-white font-semibold text-lg">
+                    {/* <div className="text-white font-semibold text-lg">
                       {property.price}
-                    </div>
+                    </div> */}
                   </div>
                 </div>
                 <div className="p-6">
@@ -388,24 +390,24 @@ export default function PropertyCards() {
                   <p className="text-gray-600 mb-6 leading-relaxed">
                     {property.description || "A premium property offering modern amenities and a prime location."}
                   </p>
-                  <div className="grid grid-cols-3 gap-4 mb-6 text-sm">
+                  <div className="grid grid-cols-3 gap-6 mb-6 text-sm bg-[#D9D9D9] rounded-lg h-[80px] p-2">
                     <div className="text-center">
                       <div className="flex items-center justify-center mb-1">
-                        <FaBed className="h-4 w-4 text-orange-500" />
+                        <FaBed className="h-4 w-4 text-black-500" />
                       </div>
                       <div className="font-semibold text-gray-900">{property.bed}</div>
                       <div className="text-gray-600">Beds</div>
                     </div>
                     <div className="text-center">
                       <div className="flex items-center justify-center mb-1">
-                        <FaBath className="h-4 w-4 text-orange-500" />
+                        <FaBath className="h-4 w-4 text-black-500" />
                       </div>
                       <div className="font-semibold text-gray-900">{property.bath}</div>
                       <div className="text-gray-600">Baths</div>
                     </div>
                     <div className="text-center">
                       <div className="flex items-center justify-center mb-1">
-                        <FaRulerCombined className="h-4 w-4 text-orange-500" />
+                        <FaRulerCombined className="h-4 w-4 text-black-500" />
                       </div>
                       <div className="font-semibold text-gray-900">{property.sqft}</div>
                       <div className="text-gray-600">Sqft</div>
@@ -423,7 +425,7 @@ export default function PropertyCards() {
                         </span>
                       ))}
                       {property.amenities.length > 3 && (
-                        <span className="text-xs text-orange-500">
+                        <span className="text-xs text-black">
                           +{property.amenities.length - 3} more
                         </span>
                       )}

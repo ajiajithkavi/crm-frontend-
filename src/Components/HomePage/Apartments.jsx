@@ -288,7 +288,7 @@ import { FaMapMarkerAlt } from "react-icons/fa";
 import { motion } from "framer-motion";
 
 const BASE_URL = "https://crm-bcgg.onrender.com";
-const categories = ["All", "Apartment", "Villa", "Plot", "Land"];
+const categories = ["All", "Apartment", "Villa", "Plot","Land"];
 
 const Apartments = ({ selectedStateId, searchData, setSelectedStateId, setSearchData }) => {
   const [properties, setProperties] = useState([]);
@@ -429,7 +429,7 @@ const Apartments = ({ selectedStateId, searchData, setSelectedStateId, setSearch
       )}
 
       {/* Heading and View All */}
-      <div className="text-center mb-10">
+      <div className="text-center mb-10 pt-8">
         {/* <div className="text-orange-500 text-sm font-light tracking-widest mb-4">
           PROPERTY PORTFOLIO
         </div> */}
@@ -441,10 +441,10 @@ const Apartments = ({ selectedStateId, searchData, setSelectedStateId, setSearch
             <button
               key={cat}
               onClick={() => setSelected(cat)}
-              className={`px-4 py-2 rounded-full border text-sm transition-all duration-300 ${
+              className={`px-4 py-2 rounded border text-sm transition-all duration-300 ${
                 selected === cat
-                  ? "bg-orange-600 text-white border-orange-600"
-                  : "text-gray-700 border-gray-300 bg-transparent"
+                   ? "border-black text-white bg-black shadow-md"
+        : "border-black text-black bg-white hover:bg-black hover:text-white hover:border-black"
               }`}
             >
               {cat}
@@ -494,12 +494,7 @@ const Apartments = ({ selectedStateId, searchData, setSelectedStateId, setSearch
             />
           </div>
 
-          {/* Content Section */}
-          <div className="p-4 flex flex-col flex-grow justify-between">
-            <div className="flex-grow">
-              <h3 className="text-lg font-bold text-gray-900 mb-1 break-words">
-                {property.companyName}
-              </h3>
+
               {/* <div className="flex items-center text-gray-600 text-sm mb-2">
                 <FaMapMarkerAlt className="h-4 w-4 mr-2" />
                 <span className="truncate">
@@ -523,6 +518,15 @@ const Apartments = ({ selectedStateId, searchData, setSelectedStateId, setSearch
                   </span>
                 )}
               </div> */}
+
+
+          {/* Content Section */}
+        <div className="p-4 flex flex-col flex-grow justify-between">
+            <div className="flex-grow">
+              <h3 className="text-lg font-bold text-gray-900 mb-1 break-words text-center">
+                {property.companyName}
+              </h3>
+              
             </div>
 
             {/* Button */}
@@ -554,7 +558,7 @@ const Apartments = ({ selectedStateId, searchData, setSelectedStateId, setSearch
       <div className="text-center mt-10">
         <Link
           to="/login"
-          className="bg-orange-600 hover:bg-orange-700 text-white font-semibold px-6 py-3 rounded-lg text-sm transition-all duration-300"
+          className="bg-black text-white font-semibold px-6 py-3 rounded-lg text-sm transition-all duration-300"
         >
           View All Builders
           <span className="ml-2 inline-block">→</span>

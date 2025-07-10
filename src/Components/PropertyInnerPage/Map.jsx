@@ -43,7 +43,7 @@ const Map = ({ building }) => {
     <div className="p-4">
       <div className="w-full">
         <h1 className="p-4 text-2xl font-bold">Map View</h1>
-        <div className="relative w-full h-[250px] md:h-[300px] lg:h-[350px] border rounded-lg shadow-lg overflow-hidden">
+        <div className="relative w-full h-[250px] md:h-[300px] lg:h-[325px] border rounded-lg shadow-lg overflow-hidden">
           <iframe
             className="w-full h-full"
             src={mapUrl}
